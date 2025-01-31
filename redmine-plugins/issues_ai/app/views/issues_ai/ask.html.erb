@@ -1,0 +1,21 @@
+<% content_for :header_tags do %>
+  <%= javascript_include_tag 'issues_ai', plugin: 'issues_ai' %>
+  <%= stylesheet_link_tag 'issues_ai', plugin: 'issues_ai' %>
+<% end %>
+
+<% html_title "Ask AI" %>
+<h3>Ask AI</h3>
+<%= form_tag '/issues_ai/ask', method: :post, id: 'ask-form' do %>
+    <div id="all_attributes" class='box tabular filedroplistner'>
+        <%= render :partial => 'form' %>
+    </div>
+    <%= submit_tag 'Ask AI' %>
+<% end %>
+
+<% if @answer %>
+    <hr>
+    <h3>Answer</h3>
+    <div>
+        <%= textilizable(@answer) %>
+    </div>
+<% end %>

@@ -81,3 +81,29 @@ $(document).ready(function () {
     initAndPlaceButton();
   });
 });
+
+function updateIssuesAiAskFrom(url, el) {
+  $("#all_attributes input, #all_attributes textarea, #all_attributes select").each(function () {
+    $(this).data("valuebeforeupdate", $(this).val());
+  });
+  if (el) {
+    $("#form_update_triggered_by").val($(el).attr("id"));
+  }
+  return $.ajax({
+    url: url,
+    type: "post",
+    data: $("#ask-form").serialize(),
+  });
+}
+
+function replaceIssuesAiAskFormWith(html) {
+  var replacement = $(html);
+  $("#all_attributes input, #all_attributes textarea, #all_attributes select").each(function () {
+    var object_id = $(this).attr("id");
+    if (object_id && $(this).data("valuebeforeupdate") != $(this).val()) {
+      replacement.find("#" + object_id).val($(this).val());
+    }
+  });
+  $("#all_attributes").empty();
+  $("#all_attributes").prepend(replacement);
+}

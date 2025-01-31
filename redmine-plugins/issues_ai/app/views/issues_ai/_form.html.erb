@@ -1,0 +1,21 @@
+<%= hidden_field_tag 'form_update_triggered_by', '' %>
+<%= heads_for_auto_complete(@project) %>
+
+<p>
+    <%= label_tag 'project', 'Project' %>
+    <%= ask_project_select_tag 'project', @project %>
+</p>
+<p>
+    <%= label_tag 'model', 'Model' %>
+    <%= text_field_tag 'model', @model, size: 40, maxlength: 255, required: true %>
+</p>
+<p>
+    <%= label_tag 'question', 'Question' %>
+    <%= text_area_tag 'question', @question, :cols => 100, :rows => 25, :accesskey => accesskey(:edit),
+                        :class => 'wiki-edit',
+                        :data => {
+                            :auto_complete => true
+                        }
+    %>
+    <%= wikitoolbar_for 'question', preview_project_wiki_page_path(:project_id => @project, :id => @title) %>
+</p>

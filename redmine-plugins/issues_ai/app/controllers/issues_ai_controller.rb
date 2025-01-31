@@ -137,4 +137,76 @@ class IssuesAiController < ApplicationController
     # redirect to the previous page
     redirect_to request.referer
   end
+
+  # This is the ask, on GET we just render the view, on POST we also call the API and set @answer
+  def ask
+    @model = Setting.plugin_issues_ai['model']
+    @title = "Ask the AI"
+    project_id = params[:project] || 'graciousstyle'
+    @project = find_project(project_id)
+
+    if request.post? || request.get?
+      @question = params[:question]
+      @model = params[:model]
+    end
+    if @model.blank?
+      @model = Setting.plugin_issues_ai['model']
+    end
+
+    is_form_update = params[:form_update_triggered_by] && !params[:form_update_triggered_by].blank?
+
+    # check if this was a POST
+    if request.post? && !is_form_update
+      prompt = @question
+      if prompt.blank?
+        flash[:error] = "Question was empty"
+        return
+      end
+
+      # the prompt can include placeholders for tickets like '#1234'
+      # and wiki pages like '[[WikiPage]]'
+      # We want to replace these with the actual content
+      prompt = prompt.gsub(/#(\d+)/) do |match|
+        issue = Issue.find_by_id($1)
+        if issue
+          "Subject: #{issue.subject}\nContent: #{issue.description}\n\n"
+        else
+          match
+        end
+      end
+
+      prompt = prompt.gsub(/\[\[(.+)\]\]/) do |match|
+        page = Wiki.find_page($1, :project => @project)
+        if page
+          "Document: #{page.title}\nContent: #{page.content.text}\n\n"
+        else
+          match
+        end
+      end
+
+      # call the API
+      client = OpenAI::Client.new(
+        access_token: Setting.plugin_issues_ai['api_key'],
+        uri_base: Setting.plugin_issues_ai['api_url'],
+      )
+      response = client.chat(
+        parameters: {
+          model: @model,
+          messages: [{
+            "role": "user",
+            "content": prompt
+          }]
+        }
+      )
+      @answer = response["choices"][0]["message"]["content"]
+
+      # For testing return the prompt
+      # @answer = prompt
+    end
+
+    respond_to do |format|
+      format.html {render :action => 'ask', :layout => !request.xhr?}
+      format.js
+    end
+  end
 end
