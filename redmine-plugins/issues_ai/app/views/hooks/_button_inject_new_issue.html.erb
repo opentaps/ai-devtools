@@ -1,0 +1,6 @@
+<%= button_tag 'Evaluate with AI', type: 'button', id: 'issues_ai_btn', class: 'button', 'data-issues_ai-type':'issue' %>
+
+<% content_for :header_tags do %>
+  <%= javascript_include_tag 'issues_ai', plugin: 'issues_ai' %>
+  <%= stylesheet_link_tag 'issues_ai', plugin: 'issues_ai' %>
+<% end %>

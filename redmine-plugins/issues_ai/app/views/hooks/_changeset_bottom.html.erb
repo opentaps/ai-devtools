@@ -1,0 +1,9 @@
+<div>
+    <%if changeset.has_code_review_results? %>
+        <%= textilizable(changeset.code_review_results) %>
+    <%elsif changeset.has_code_review_queued? %>
+        Pending AI Code Review ... (please check again in a few minutes)
+    <%else%>
+        <%= link_to 'Queue an AI Code Review', '/issues_ai/queue_review?commit=' + changeset.identifier %>
+    <%end%>
+</div>

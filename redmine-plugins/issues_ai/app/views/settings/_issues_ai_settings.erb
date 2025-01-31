@@ -1,0 +1,115 @@
+<table>
+  <tbody>
+      <tr>
+          <th>API Url</th>
+          <td>
+              <input type="text" id="settings_api_url"
+                  value="<%= settings['api_url'] %>"
+                  placeholder="https://api.openai.com/v1"
+                  size="30"
+                  name="settings[api_url]" >
+          </td>
+      </tr>
+      <tr>
+          <th>API Key</th>
+          <td>
+              <input type="password" id="settings_api_key"
+                  value="<%= settings['api_key'] %>"
+                  placeholder="sk-xxxx"
+                  size="80"
+                  name="settings[api_key]" >
+          </td>
+      </tr>
+      <tr>
+          <th>Model</th>
+          <td>
+              <input type="text" id="settings_model"
+                  value="<%= settings['model'] %>"
+                  size="30"
+                  placeholder="gpt-3.5-turbo"
+                  name="settings[model]" >
+          </td>
+      </tr>
+      <tr>
+          <th>Temperature</th>
+          <td>
+              <input type="number" id="settings_temperature"
+                  value="<%= settings['temperature'] %>"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.2"
+                  name="settings[temperature]" >
+          </td>
+      </tr>
+      <tr>
+          <th>Max Tokens</th>
+          <td>
+              <input type="number" id="settings_max_tokens"
+                  value="<%= settings['max_tokens'] %>"
+                  min="0"
+                  placeholder="2000"
+                  name="settings[max_tokens]" >
+          </td>
+      </tr>
+      <tr>
+          <th>Default Prompt</th>
+          <td>
+              <textarea
+                  id="settings_default_prompt"
+                  name="settings[default_prompt]"
+                  rows="10"
+                ><%= settings['default_prompt'] or 'Check how this ticket is worded and give useful feedback as to how it could be improved' %></textarea>
+          </td>
+      </tr>
+      <tr>
+          <th>Prompt for new Features</th>
+          <td>
+              <textarea
+                  id="settings_prompt_feature"
+                  name="settings[prompt_feature]"
+                  rows="10"
+                ><%= settings['prompt_feature'] %></textarea>
+          </td>
+      </tr>
+      <tr>
+          <th>Prompt for Bug</th>
+          <td>
+              <textarea
+                  id="settings_prompt_bug"
+                  name="settings[prompt_bug]"
+                  rows="10"
+                ><%= settings['prompt_bug'] %></textarea>
+          </td>
+      </tr>
+      <tr>
+          <th>Prompt for Support</th>
+          <td>
+              <textarea
+                  id="settings_prompt_support"
+                  name="settings[prompt_support]"
+                  rows="10"
+                ><%= settings['prompt_support'] %></textarea>
+          </td>
+      </tr>
+      <tr>
+          <th>Prompt for Long Term</th>
+          <td>
+              <textarea
+                  id="settings_prompt_longterm"
+                  name="settings[prompt_longterm]"
+                  rows="10"
+                ><%= settings['prompt_longterm'] %></textarea>
+          </td>
+      </tr>
+      <tr>
+          <th>Prompt for Unit Tests</th>
+          <td>
+              <textarea
+                  id="settings_prompt_unittests"
+                  name="settings[prompt_unittests]"
+                  rows="10"
+                ><%= settings['prompt_unittests'] %></textarea>
+          </td>
+      </tr>
+  </tbody>
+</table>

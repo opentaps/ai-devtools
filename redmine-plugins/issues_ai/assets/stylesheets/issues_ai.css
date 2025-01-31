@@ -1,0 +1,34 @@
+.flash.issues_ai_results {
+    background-color: #e3f2fd;
+    border-color: #90caf9;
+    scrollbar-width: thin;
+    scrollbar-color: #90caf9 #e3f2fd;
+    max-height: 25em;
+    overflow-y: auto;
+}
+
+.flash.issues_ai_results::-webkit-scrollbar {
+    width: 8px;
+}
+
+.flash.issues_ai_results::-webkit-scrollbar-track {
+    background: #e3f2fd;
+}
+
+.flash.issues_ai_results::-webkit-scrollbar-thumb {
+    background-color: #90caf9;
+    border-radius: 4px;
+    border: 2px solid #e3f2fd;
+}
+
+.flash.issues_ai_results p {
+    margin: 0;
+    padding: 0;
+}
+
+#issues_ai_btn.loading {
+    background-position: right center;
+    background-image: url(/assets/loading-5fb375e6.gif);
+    background-repeat: no-repeat;
+    padding-right: 20px;
+}
