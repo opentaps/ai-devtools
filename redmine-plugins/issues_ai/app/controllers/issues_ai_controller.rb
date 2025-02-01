@@ -215,4 +215,18 @@ class IssuesAiController < ApplicationController
       format.js
     end
   end
+
+  def list_models
+    # call the openai API
+    client = OpenAI::Client.new(
+      access_token: Setting.plugin_issues_ai['api_key'],
+      uri_base: Setting.plugin_issues_ai['api_url'],
+    )
+
+    # get the models from the openAI api
+    response = client.models.list
+    @models = response['data'].map { |model| model['id'] }
+
+    render json: { models: @models }
+  end
 end
