@@ -1,0 +1,13 @@
+#!/bin/bash
+
+while read oldrev newrev refname; do
+  if [[ $refname = "refs/heads/staging" ]]; then
+    echo "Queuing code review for staging branch"
+    mkdir -p "code_review/queue"
+    range="$oldrev..$newrev"
+    if [[ $oldrev == "0000000000000000000000000000000000000000" ]]; then
+      range="$newrev"
+    fi
+    git log --pretty=format:"%H" $range | xargs -I {} sh -c 'echo "{}" > code_review/queue/{}'
+  fi
+done
