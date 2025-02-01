@@ -184,21 +184,27 @@ class IssuesAiController < ApplicationController
         end
       end
 
-      # call the API
-      client = OpenAI::Client.new(
-        access_token: Setting.plugin_issues_ai['api_key'],
-        uri_base: Setting.plugin_issues_ai['api_url'],
-      )
-      response = client.chat(
-        parameters: {
-          model: @model,
-          messages: [{
-            "role": "user",
-            "content": prompt
-          }]
-        }
-      )
-      @answer = response["choices"][0]["message"]["content"]
+      begin
+        # call the API
+        client = OpenAI::Client.new(
+          access_token: Setting.plugin_issues_ai['api_key'],
+          uri_base: Setting.plugin_issues_ai['api_url'],
+        )
+        response = client.chat(
+          parameters: {
+            model: @model,
+            messages: [{
+              "role": "user",
+              "content": prompt
+            }]
+          }
+        )
+        @answer = response["choices"][0]["message"]["content"]
+      rescue => e
+        # print the error
+        puts "Error: #{e.message}"
+        flash[:error] = e.message
+      end
 
       # For testing return the prompt
       # @answer = prompt
