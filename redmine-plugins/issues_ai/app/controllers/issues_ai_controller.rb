@@ -181,40 +181,6 @@ class IssuesAiController < ApplicationController
         return
       end
 
-      # use Function Calling to retreive tickets
-      tools = [{
-        type: :function,
-        function: {
-          name: "get_tickets",
-          description: "Get tickets from the Redmine API",
-          parameters: {
-            type: :object,
-            properties: {
-              max_age_days: {
-                type: :number,
-                description: "The maximum age of the tickets in days"
-              },
-              status: {
-                type: :string,
-                description: "Only return tickets with this status",
-                enum: %w[all open closed],
-              },
-              tracker: {
-                type: :string,
-                description: "Only return tickets with this tracker",
-                enum: %w[all bug feature support long_term test],
-              },
-              limit: {
-                type: :number,
-                description: "The maximum number of tickets to get"
-              },
-            },
-            required: [],
-            additionalProperties: false,
-          },
-        }
-      }]
-
       messages = [{
         role: :user,
         content: prompt
@@ -227,7 +193,7 @@ class IssuesAiController < ApplicationController
           parameters: {
             model: @model,
             messages: messages,
-            tools: tools
+            tools: TOOLS
           }
         )
         msg = response.dig("choices", 0, "message")
@@ -242,14 +208,7 @@ class IssuesAiController < ApplicationController
               { symbolize_names: true },
             )
             puts "Try to call tool function_name: #{function_name} with #{function_args}"
-            function_response =
-              case function_name
-              when "get_tickets"
-                tool_get_tickets(**function_args)
-              else
-                puts "Unknown tool function_name: #{function_name}"
-                nil
-              end
+            function_response = invoke_the_right_tool(function_name, function_args)
 
             if function_response
               # do no print the results as this could be a lot of text

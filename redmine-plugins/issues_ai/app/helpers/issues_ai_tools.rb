@@ -97,7 +97,56 @@ module IssuesAiTools
 
   end
 
+  # schema for the get_tickets function
+  TOOL_GET_TICKETS_SCHEMA = {
+    type: :function,
+    function: {
+      name: "get_tickets",
+      description: "Get tickets from the Redmine API",
+      parameters: {
+        type: :object,
+        properties: {
+          max_age_days: {
+            type: :number,
+            description: "The maximum age of the tickets in days"
+          },
+          status: {
+            type: :string,
+            description: "Only return tickets with this status",
+            enum: %w[all open closed],
+          },
+          tracker: {
+            type: :string,
+            description: "Only return tickets with this tracker",
+            enum: %w[all bug feature support long_term test],
+          },
+          limit: {
+            type: :number,
+            description: "The maximum number of tickets to get"
+          },
+        },
+        required: [],
+        additionalProperties: false,
+      },
+    }
+  }
+
+  # convert a Redmine issue to a format that the LLM can understand
   def format_issue_for_llm(r)
     "### Ticket ID: ##{r.id}\n  Title: #{r.subject}\n  Description: #{r.description}\n  Type: #{r.tracker.nil? ? 'N/A' : r.tracker.name}\n  Status: #{r.status.nil? ? 'N/A' : r.status.name}\n  Created on: #{r.created_on}\n  #{r.assigned_to.nil? ? 'Not assigned' : 'Assigned to: ' + r.assigned_to.name}\n\n"
   end
+
+  # Invoke the right tool based on the function_name
+  def invoke_the_right_tool(function_name, function_args)
+    case function_name
+    when "get_tickets"
+      tool_get_tickets(**function_args)
+    else
+      puts "Unknown tool function_name: #{function_name}"
+      nil
+    end
+  end
+
+  # Use this for the `tools` argument in the openAI request
+  TOOLS = [TOOL_GET_TICKETS_SCHEMA]
 end
