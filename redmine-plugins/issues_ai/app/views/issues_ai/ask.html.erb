@@ -9,13 +9,15 @@
     <div id="all_attributes" class='box tabular filedroplistner'>
         <%= render :partial => 'form' %>
     </div>
-    <%= submit_tag 'Ask AI' %>
+    <%= submit_tag 'Ask AI', id: 'submit_ask_ai_btn' %>
 <% end %>
 
 <% if @answer %>
     <hr>
-    <h3>Answer</h3>
-    <div>
-        <%= textilizable(@answer) %>
+    <div class="box" id="ask_ai_results">
+        <h3>Answer</h3>
+        <div>
+            <%= textilizable(@answer) %>
+        </div>
     </div>
 <% end %>

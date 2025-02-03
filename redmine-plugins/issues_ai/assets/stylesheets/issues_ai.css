@@ -26,6 +26,7 @@
     padding: 0;
 }
 
+#submit_ask_ai_btn.loading,
 #issues_ai_btn.loading {
     background-position: right center;
     background-image: url(/assets/loading-5fb375e6.gif);

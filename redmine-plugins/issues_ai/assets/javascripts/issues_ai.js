@@ -2,6 +2,11 @@ $(document).ready(function () {
   const initAndPlaceButton = () => {
     // find the button
     var button = $("#issues_ai_btn");
+    if (button.length === 0) {
+      // button not found, do nothing
+      return;
+    }
+
     // check the button type from data-eval
     var btnType = button.attr("data-issues_ai-type");
     //  now move it accordingly. if we have buttons in other pages we can tweak the placement like this
@@ -107,3 +112,25 @@ function replaceIssuesAiAskFormWith(html) {
   $("#all_attributes").empty();
   $("#all_attributes").prepend(replacement);
 }
+
+$(document).ready(function () {
+  var button = $("#submit_ask_ai_btn");
+  if (button.length === 0) {
+    // button not found, do nothing
+    return;
+  }
+  var form = button.closest("form");
+  if (form.length === 0) {
+    // form not found, do nothing
+    return;
+  }
+
+  form.on("submit", function () {
+    // disable the button while processing
+    button.prop("disabled", true);
+    // and set the loading css class
+    button.addClass("loading");
+    // clear previous results if any
+    $("#ask_ai_results").remove();
+  });
+});
