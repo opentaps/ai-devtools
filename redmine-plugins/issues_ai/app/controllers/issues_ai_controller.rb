@@ -1,6 +1,8 @@
 require "openai"
 
 class IssuesAiController < ApplicationController
+  include IssuesAiTools
+
   def api
     puts "[issues_ai] in /api handler"
 
@@ -163,13 +165,126 @@ class IssuesAiController < ApplicationController
         return
       end
 
+      # init the client
+      # run the prompt and check for function calls
+      begin
+        # call the API
+        client = OpenAI::Client.new(
+          access_token: Setting.plugin_issues_ai['api_key'],
+          uri_base: Setting.plugin_issues_ai['api_url'],
+        )
+      rescue => e
+        # print the error
+        puts "Error creating the client: #{e.message}"
+        puts e.backtrace
+        flash[:error] = e.message
+        return
+      end
+
+      # use Function Calling to retreive tickets
+      tools = [{
+        type: :function,
+        function: {
+          name: "get_tickets",
+          description: "Get tickets from the Redmine API",
+          parameters: {
+            type: :object,
+            properties: {
+              max_age_days: {
+                type: :number,
+                description: "The maximum age of the tickets in days"
+              },
+              status: {
+                type: :string,
+                description: "Only return tickets with this status",
+                enum: %w[all open closed],
+              },
+              tracker: {
+                type: :string,
+                description: "Only return tickets with this tracker",
+                enum: %w[all bug feature support long_term test],
+              },
+              limit: {
+                type: :number,
+                description: "The maximum number of tickets to get"
+              },
+            },
+            required: [],
+            additionalProperties: false,
+          },
+        }
+      }]
+
+      messages = [{
+        role: :user,
+        content: prompt
+      }]
+
+      # run the prompt and check for function calls
+      begin
+        # call the API
+        response = client.chat(
+          parameters: {
+            model: @model,
+            messages: messages,
+            tools: tools
+          }
+        )
+        msg = response.dig("choices", 0, "message")
+        tool_calls = msg.dig("tool_calls")
+        puts "Response tool calls: #{tool_calls}"
+        if tool_calls
+          tool_calls.each do |tool_call|
+            tool_call_id = tool_call.dig("id")
+            function_name = tool_call.dig("function", "name")
+            function_args = JSON.parse(
+              tool_call.dig("function", "arguments"),
+              { symbolize_names: true },
+            )
+            puts "Try to call tool function_name: #{function_name} with #{function_args}"
+            function_response =
+              case function_name
+              when "get_tickets"
+                tool_get_tickets(**function_args)
+              else
+                puts "Unknown tool function_name: #{function_name}"
+                nil
+              end
+
+            if function_response
+              # do no print the results as this could be a lot of text
+              # but check the length:
+
+              puts "Called function #{function_name} successfully with response length: #{function_response.length}"
+              # For a subsequent message with the role "tool", OpenAI requires
+              # the preceding message to have a tool_calls argument.
+              messages << msg
+
+              messages << {
+                tool_call_id: tool_call_id,
+                role: :tool,
+                name: function_name,
+                content: function_response
+              }
+            end
+          end
+        end
+      rescue => e
+        # print the error
+        puts "Error running prompt with tools: #{e.message}"
+        puts e.backtrace
+        flash[:error] = e.message
+        return
+      end
+
+
       # the prompt can include placeholders for tickets like '#1234'
       # and wiki pages like '[[WikiPage]]'
       # We want to replace these with the actual content
       prompt = prompt.gsub(/#(\d+)/) do |match|
         issue = Issue.find_by_id($1)
         if issue
-          "Subject: #{issue.subject}\nContent: #{issue.description}\n\n"
+          format_issue_for_llm(issue)
         else
           match
         end
@@ -184,25 +299,25 @@ class IssuesAiController < ApplicationController
         end
       end
 
+      # append the prompt to the previous messages that inluded the tool calls
+      # and results
+      messages << {
+        role: :user,
+        content: prompt
+      }
+
       begin
-        # call the API
-        client = OpenAI::Client.new(
-          access_token: Setting.plugin_issues_ai['api_key'],
-          uri_base: Setting.plugin_issues_ai['api_url'],
-        )
         response = client.chat(
           parameters: {
             model: @model,
-            messages: [{
-              "role": "user",
-              "content": prompt
-            }]
+            messages: messages
           }
         )
         @answer = response["choices"][0]["message"]["content"]
       rescue => e
         # print the error
         puts "Error: #{e.message}"
+        puts e.backtrace
         flash[:error] = e.message
       end
 
