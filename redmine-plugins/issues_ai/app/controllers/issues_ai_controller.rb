@@ -154,6 +154,11 @@ class IssuesAiController < ApplicationController
     if @model.blank?
       @model = Setting.plugin_issues_ai['model']
     end
+    # for tool calling check if we have a configured model
+    @tool_model = Setting.plugin_issues_ai['tool_model']
+    if @tool_model.blank?
+      @tool_model = @model
+    end
 
     is_form_update = params[:form_update_triggered_by] && !params[:form_update_triggered_by].blank?
 
@@ -191,7 +196,7 @@ class IssuesAiController < ApplicationController
         # call the API
         response = client.chat(
           parameters: {
-            model: @model,
+            model: @tool_model,
             messages: messages,
             tools: TOOLS
           }
@@ -231,6 +236,7 @@ class IssuesAiController < ApplicationController
       rescue => e
         # print the error
         puts "Error running prompt with tools: #{e.message}"
+        puts e
         puts e.backtrace
         flash[:error] = e.message
         return
@@ -276,6 +282,7 @@ class IssuesAiController < ApplicationController
       rescue => e
         # print the error
         puts "Error: #{e.message}"
+        puts e
         puts e.backtrace
         flash[:error] = e.message
       end
