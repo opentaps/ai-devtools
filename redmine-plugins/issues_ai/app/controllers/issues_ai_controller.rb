@@ -279,6 +279,26 @@ class IssuesAiController < ApplicationController
           }
         )
         @answer = response["choices"][0]["message"]["content"]
+      rescue Faraday::Error => e
+        puts "Faraday Error: #{e}"
+        if e.response
+          # could have a JSON with error=>message=>"the error"
+          begin
+            puts "Error response: #{e.response_body}"
+            error = e.response_body.dig("error", "message")
+            if error
+              flash[:error] = error
+              return
+            end
+          rescue => e2
+            # ignore this
+            puts "Error parsing error response: #{e2}"
+            puts e2.backtrace
+          end
+        else
+          puts "No response in error"
+        end
+        flash[:error] = e.message
       rescue => e
         # print the error
         puts "Error: #{e.message}"
