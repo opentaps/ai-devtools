@@ -14,6 +14,7 @@ Perform a code review with these requirements:
    - Check for proper imperative mood and clarity
    - Accurately describe the changes made in the commit
 
+<commit>
 Commit {hash} from {author}
 
 Code Diff:
@@ -22,6 +23,7 @@ Code Diff:
 Commit Message:
 {subject}
 {body}
+</commit>
 
 Provide feedback in this format:
 [SOURCE]
