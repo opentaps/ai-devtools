@@ -121,6 +121,35 @@ class IssuesAiController < ApplicationController
 
   end
 
+  # Page to change the settings of the code review for a repository
+  def code_review_settings
+
+    repository_id = params[:repository_id]
+    unless repository_id.blank?
+      @repository = Repository.find_by_id(repository_id)
+      if @repository.nil?
+        flash[:error] = "Repository not found"
+        return
+      end
+
+      @prompt = @repository.code_review_prompt
+    end
+
+    # check if this was a POST
+    if request.post?
+      if repository_id.blank?
+        flash[:error] = "Repository ID is required"
+        return
+      end
+      @prompt = params[:prompt]
+      if @prompt.blank?
+        flash[:error] = "Prompt is required"
+        return
+      end
+      @repository.code_review_prompt = @prompt
+    end
+  end
+
   # This is a GET handler that will be called when the user clicks the 'Queue Review' button
   def queue_review
 

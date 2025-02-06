@@ -58,5 +58,5 @@ module ChangesetPatch
   end
 end
 
-# Add module to Issue
+# Apply the patch
 Changeset.send(:include, ChangesetPatch)

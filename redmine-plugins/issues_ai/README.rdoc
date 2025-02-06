@@ -19,6 +19,7 @@ Tool Model:: The model to use for tool invocation, usually OpenAI model work bet
 Temperature:: Optional: Override the Model default temperature, see for example: https://platform.openai.com/docs/api-reference/chat#chat-create-temperature
 Max Tokens:: Optional: Limit the amount of output tokens, see https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens
 Default Prompt:: The default prompt to use for evaluating the Issue content, the other prompt are for each specific Issue type
+Code Review Prompts:: Links to a page where the prompts for code reviews can be configured for each Repository setup in Redmine
 
 == Usage
 
