@@ -4,5 +4,7 @@ module IssuesAi
     render_on :view_issues_form_details_top, partial: "hooks/button_inject_new_issue"
     # customize changeset view of issues
     render_on :view_issues_history_changeset_bottom, partial: "hooks/changeset_bottom"
+    # customize changeset view of issues
+    render_on :view_issues_history_changesets_bottom, partial: "hooks/changesets_bottom"
   end
 end

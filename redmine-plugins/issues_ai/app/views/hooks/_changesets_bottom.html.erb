@@ -1,0 +1,8 @@
+<div>
+    <h4>Code Review</h4>
+    <%= form_tag '/issues_ai/code_review_commit', method: :post do %>
+        <%= hidden_field_tag 'commit_hash', @changesets.map(&:identifier).join(',') %>
+        <%= hidden_field_tag 'back_url', request.fullpath %>
+        <%= submit_tag 'Review All Changes Now', :onclick=> "this.form.back_url.value = window.location" %>
+    <% end %>
+</div>

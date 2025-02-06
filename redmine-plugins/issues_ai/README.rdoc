@@ -33,6 +33,11 @@ Redmine does not offer all the hooks needed, so here are a couple of manual patc
 <!-- /CUSTOM INSERTED CODE -->
 ```
 
+- Add the following at the end of `app/views/issues/tabs/_changesets.html.erb`:
+```
+<%= call_hook(:view_issues_history_changesets_bottom, { :changesets => @changesets }) %>
+```
+
 == Configuration
 
 Go to the plugin settings page and add your API urls, keys and default models.

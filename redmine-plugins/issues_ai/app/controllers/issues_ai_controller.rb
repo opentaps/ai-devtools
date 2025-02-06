@@ -156,17 +156,33 @@ class IssuesAiController < ApplicationController
     @back = params[:back_url]
     # ge the changeset
     commit_hash = params[:commit_hash]
+    puts "Got commit hash: #{commit_hash}"
     if commit_hash.nil?
       flash[:error] = "Commit hash is required"
       return
     end
-    @changeset = Changeset.find_by_revision(commit_hash)
-    if @changeset.nil?
-      flash[:error] = "Changeset #{commit_hash} not found"
-      return
+    # split the commit hash at comma
+    commit_hashes = commit_hash.split(',')
+
+    # validate them by fetching all the changesets
+    # and they must be all from the same repository
+    @changesets = []
+    repository = nil
+    commit_hashes.each do |commit_hash|
+      changeset = Changeset.find_by_revision(commit_hash)
+      if changeset.nil?
+        flash[:error] = "Changeset #{commit_hash} not found"
+        return
+      end
+      if repository.nil?
+        repository = changeset.repository
+      elsif repository != changeset.repository
+        flash[:error] = "Changesets are not from the same repository"
+        return
+      end
+      @changesets << changeset
     end
 
-    repository = @changeset.repository
     if repository.nil?
       flash[:error] = "Repository not found for this changeset"
       return
@@ -178,23 +194,54 @@ class IssuesAiController < ApplicationController
       return
     end
 
-    @parsed = nil
+    @combined_diff = nil
     begin
-      # get the diff. method takes path,rev,rev_to but we only need rev
-      # note the response is an array of lines
-      @parsed = parse_commit(@changeset)
-      if @parsed.nil?
-        flash[:error] = "Changeset diff not found"
+      # extract the Commit template from the prompt: it is the part between <commit> and </commit> tags
+      commit_tpl = prompt.match(/<commit>(.*)<\/commit>/m)[1]
+      if commit_tpl.nil?
+        flash[:error] = "Commit template not found in the prompt"
         return
       end
 
-      # isnert the values into the prompt
-      prompt = prompt.gsub(/{hash}/, @parsed[:hash])
-      prompt = prompt.gsub(/{author}/, @parsed[:author])
-      prompt = prompt.gsub(/{date}/, @parsed[:date])
-      prompt = prompt.gsub(/{subject}/, @parsed[:subject])
-      prompt = prompt.gsub(/{body}/, @parsed[:body])
-      prompt = prompt.gsub(/{diff}/, @parsed[:diff])
+      # remove the commit template from the prompt but keep the </commit> marker
+      prompt = prompt.gsub(/<commit>.*<\/commit>/m, '</commit>')
+
+      @changesets.each do |changeset|
+        parsed = parse_commit(changeset)
+        if parsed.nil?
+          flash[:error] = "Changeset diff not found"
+          return
+        end
+        # insert the values into the template
+        tpl = commit_tpl
+        puts "Populating commit template #{tpl} with #{parsed}"
+        tpl = tpl.gsub(/{hash}/, parsed[:hash])
+        tpl = tpl.gsub(/{author}/, parsed[:author])
+        tpl = tpl.gsub(/{date}/, parsed[:date])
+        tpl = tpl.gsub(/{subject}/, parsed[:subject])
+        tpl = tpl.gsub(/{body}/, parsed[:body])
+        tpl = tpl.gsub(/{diff}/, parsed[:diff])
+        # insert the commit template into the prompt at the </commit> marker
+        prompt = prompt.gsub(/<\/commit>/, tpl + '</commit>')
+        puts "Built prompt: #{prompt}"
+
+        if @combined_diff.nil?
+          @combined_diff = parsed[:diff]
+        else
+          @combined_diff += "\n\n" + parsed[:diff]
+        end
+      end
+      # cleanup the extra </commit> marker by replacing the ending </commit></commit> with just </commit>
+      prompt = prompt.gsub(/<\/commit><\/commit>/, '</commit>')
+      if @combined_diff.nil?
+        flash[:error] = "No changeset data found"
+        return
+      end
+
+      # for analyzing multiple commits, we need to adapt the prompt
+      if @changesets.length > 1
+        prompt += "\nNote that this is a combined analysis of multiple commits. Please provide a more detailed review of the combined changes."
+      end
 
       puts "[issues_ai] Code Review Prompt: #{prompt}"
 
@@ -249,11 +296,15 @@ class IssuesAiController < ApplicationController
       flash[:error] = error
     else
       begin
+        # if we only had a single changeset and
         # if the changeset had no review saved, saved it now automatically
-        if !@changeset.has_code_review_results?
-          @changeset.save_code_review_results(@review)
-        else
-          @previous_review = @changeset.code_review_results
+        if @changesets.length == 1
+          @changeset = @changesets[0]
+          if !@changeset.has_code_review_results?
+            @changeset.save_code_review_results(@review)
+          else
+            @previous_review = @changeset.code_review_results
+          end
         end
       rescue => e
         puts "Ignoring Error: #{e.message}"
