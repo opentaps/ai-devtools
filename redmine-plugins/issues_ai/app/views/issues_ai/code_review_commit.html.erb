@@ -1,0 +1,35 @@
+<% html_title "Code review for #{format_revision(@changeset)}" %>
+
+<h3>Commit <%= format_revision(@changeset) %></h3>
+<% if @parsed %>
+<b>Author:</b> <%= @parsed[:author] %><br>
+<b>Subject:</b> <%= @parsed[:subject] %><br>
+<b>Body:</b> <%= @parsed[:body] %><br>
+<pre><%= @parsed[:diff] %></pre>
+<% end %>
+
+<% if @review %>
+<h3>Code Review</h3>
+<div>
+    <%= textilizable(@review) %>
+</div>
+    <% if @previous_review %>
+        <%= form_tag '/issues_ai/save_code_review', method: :post do %>
+            <%= hidden_field_tag 'commit_hash', @changeset.identifier %>
+            <%= hidden_field_tag 'review', @review %>
+            <%= hidden_field_tag 'back_url', @back %>
+            <%= submit_tag 'Save' %>
+        <% end %>
+    <% end %>
+<% end %>
+
+<% if @previous_review %>
+<h3>Previous Code Review</h3>
+<div>
+    <%= textilizable(@previous_review) %>
+</div>
+<% end %>
+
+<% if @back%>
+<a href="<%= @back %>">Back</a>
+<% end %>

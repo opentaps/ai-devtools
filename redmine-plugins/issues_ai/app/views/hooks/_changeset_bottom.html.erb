@@ -1,10 +1,15 @@
 <div>
     <%if changeset.has_code_review_results? %>
         <%= textilizable(changeset.code_review_results) %>
-        <%= link_to 'Queue a new AI Code Review', '/issues_ai/queue_review?commit=' + changeset.identifier %>
+        <%= link_to 'Queue a new AI Code Review', '/issues_ai/queue_review?commit_hash=' + changeset.identifier %>
     <%elsif changeset.has_code_review_queued? %>
         Pending AI Code Review ... (please check again in a few minutes)
     <%else%>
-        <%= link_to 'Queue an AI Code Review', '/issues_ai/queue_review?commit=' + changeset.identifier %>
+        <%= link_to 'Queue an AI Code Review', '/issues_ai/queue_review?commit_hash=' + changeset.identifier %>
     <%end%>
+    <%= form_tag '/issues_ai/code_review_commit', method: :post do %>
+        <%= hidden_field_tag 'commit_hash', changeset.identifier %>
+        <%= hidden_field_tag 'back_url', request.fullpath %>
+        <%= submit_tag 'Review Now', :onclick=> "this.form.back_url.value = window.location" %>
+    <% end %>
 </div>

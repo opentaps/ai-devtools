@@ -55,6 +55,12 @@ module ChangesetPatch
       return nil if path.nil?
       File.open(path, 'w') { |file| file.write(self.identifier) }
     end
+
+    def save_code_review_results(results)
+      path = code_review_results_path
+      return nil if path.nil?
+      File.open(path, 'w') { |file| file.write(results) }
+    end
   end
 end
 

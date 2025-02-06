@@ -2,6 +2,7 @@ require "openai"
 
 class IssuesAiController < ApplicationController
   include IssuesAiTools
+  helper :repositories
 
   def api
     puts "[issues_ai] in /api handler"
@@ -150,11 +151,138 @@ class IssuesAiController < ApplicationController
     end
   end
 
+  # Perform the Code review for a given commit hash
+  def code_review_commit
+    @back = params[:back_url]
+    # ge the changeset
+    commit_hash = params[:commit_hash]
+    if commit_hash.nil?
+      flash[:error] = "Commit hash is required"
+      return
+    end
+    @changeset = Changeset.find_by_revision(commit_hash)
+    if @changeset.nil?
+      flash[:error] = "Changeset #{commit_hash} not found"
+      return
+    end
+
+    repository = @changeset.repository
+    if repository.nil?
+      flash[:error] = "Repository not found for this changeset"
+      return
+    end
+
+    prompt = repository.code_review_prompt
+    if prompt.blank?
+      flash[:error] = "Code review prompt not found for this repository"
+      return
+    end
+
+    @parsed = nil
+    begin
+      # get the diff. method takes path,rev,rev_to but we only need rev
+      # note the response is an array of lines
+      @parsed = parse_commit(@changeset)
+      if @parsed.nil?
+        flash[:error] = "Changeset diff not found"
+        return
+      end
+
+      # isnert the values into the prompt
+      prompt = prompt.gsub(/{hash}/, @parsed[:hash])
+      prompt = prompt.gsub(/{author}/, @parsed[:author])
+      prompt = prompt.gsub(/{date}/, @parsed[:date])
+      prompt = prompt.gsub(/{subject}/, @parsed[:subject])
+      prompt = prompt.gsub(/{body}/, @parsed[:body])
+      prompt = prompt.gsub(/{diff}/, @parsed[:diff])
+
+      puts "[issues_ai] Code Review Prompt: #{prompt}"
+
+    rescue => e
+      flash[:error] = "Error getting changeset data: #{e.message}"
+      puts e
+      puts e.backtrace
+      return
+    end
+
+    # validate the settings
+    api_url = Setting.plugin_issues_ai['api_url']
+    api_key = Setting.plugin_issues_ai['api_key']
+    model = Setting.plugin_issues_ai['model']
+    error = nil
+    if api_url.blank? || api_key.blank? || model.blank?
+      error = 'Please configure the plugin settings: <a target="_blank" href="/settings/plugin/issues_ai">Configure</a>'
+    end
+
+    unless error
+      begin
+        # call the openai API
+        client = OpenAI::Client.new(
+          access_token: api_key,
+          uri_base: api_url,
+        )
+
+        puts "[issues_ai] Code Review Calling the API at #{api_url} with model #{model}"
+        response = client.chat(
+          parameters: {
+            model: model,
+            messages: [{
+              "role": "user",
+              "content": prompt
+            }]
+          }
+        )
+        puts "[issues_ai] Code Review Got response"
+        # get the first choice
+        @review = response.dig("choices", 0, "message", "content")
+        puts "[issues_ai] Code Review Got result: #{@review}"
+      rescue => e
+        # print the error
+        error = "Error running prompt with tools: #{e.message}"
+        puts error
+        puts e
+        puts e.backtrace
+      end
+    end
+
+    if error
+      flash[:error] = error
+    else
+      begin
+        # if the changeset had no review saved, saved it now automatically
+        if !@changeset.has_code_review_results?
+          @changeset.save_code_review_results(@review)
+        else
+          @previous_review = @changeset.code_review_results
+        end
+      rescue => e
+        puts "Ignoring Error: #{e.message}"
+      end
+    end
+  end
+
+  def save_code_review
+    commit = params[:commit_hash]
+    review = params[:review]
+    back = params[:back_url]
+
+    puts "[issues_ai] Save new Review for commit #{commit}"
+
+    changeset = Changeset.find_by_revision(commit)
+    if changeset.nil?
+      flash[:error] = "Changeset not found"
+      return
+    end
+
+    changeset.save_code_review_results(review)
+    redirect_to back
+  end
+
   # This is a GET handler that will be called when the user clicks the 'Queue Review' button
   def queue_review
 
-    # get the 'commit' parameter
-    commit = params[:commit]
+    # get the 'commit_hash' parameter
+    commit = params[:commit_hash]
     puts "[issues_ai] Queue Review for commit #{commit}"
     # get the changeset
     changeset = Changeset.find_by_revision(commit)

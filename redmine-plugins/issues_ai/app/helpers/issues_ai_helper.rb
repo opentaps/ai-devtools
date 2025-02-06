@@ -1,5 +1,3 @@
-#require Project
-
 module IssuesAiHelper
   def ask_project_select_tag(name='project', current_project)
     # find all the projects

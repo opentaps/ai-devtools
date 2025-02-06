@@ -1,5 +1,64 @@
 # The functions to help with the AI tools
 module IssuesAiTools
+
+  # Parse a commit inforamtion and return the details in an object with
+  # fields: hash, author, date, subject, body, diff
+  def parse_commit(changeset)
+    repository = changeset.repository
+    if repository.nil?
+      return nil
+    end
+
+    # get the diff. method takes path,rev,rev_to but we only need rev
+    # note the response is an array of lines
+    diffs = repository.diff(nil, changeset.identifier, nil)
+    if diffs.blank?
+      return nil
+    end
+
+    # parse from diffs array: first line has the commit hash, we can ignore that
+    # second line is the author preceded by "Author:"
+    # third line is the date,
+    # fourth line is blank
+    # fifth line is the subject, then the body, then a blank line, then the diff
+    author = diffs[1]
+    unless author.blank?
+      author = author.gsub(/^Author:\s*/, '')
+    end
+    date = diffs[2]
+    unless date.blank?
+      date = date.gsub(/^Date:\s*/, '')
+    end
+    subject = diffs[4]
+    unless subject.blank?
+      # just trim as it has leading spaces
+      subject = subject.strip
+    end
+    # read the body, starting from the fifth line until a blank line ('\n')
+    body = ''
+    i = 5
+    while i < diffs.length
+      line = diffs[i]
+      if line == "\n"
+        break
+      end
+      body += line
+      i += 1
+    end
+    # the rest is the diff
+    diff = diffs[i+1..-1].join()
+
+    # return the object
+    {
+      hash: changeset.identifier,
+      author: author,
+      date: date,
+      subject: subject,
+      body: body,
+      diff: diff
+    }
+  end
+
   # Retreive tickets for the AI prompts.
   # optional arguments:
   #  - max_age_days: filter out tickets that are more than max_age_days old
