@@ -17,7 +17,7 @@ API Key:: The API key to use for authentication
 Model:: The default model to use for the AI requests
 Tool Model:: The model to use for tool invocation, usually OpenAI model work better here
 Temperature:: Optional: Override the Model default temperature, see for example: https://platform.openai.com/docs/api-reference/chat#chat-create-temperature
-Max Tokens:: Optional: Limit the model number of output tokens, see https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens
+Max Tokens:: Optional: Limit the amount of output tokens, see https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens
 Default Prompt:: The default prompt to use for evaluating the Issue content, the other prompt are for each specific Issue type
 
 == Usage
