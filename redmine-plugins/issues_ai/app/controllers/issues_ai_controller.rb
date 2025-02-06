@@ -154,6 +154,8 @@ class IssuesAiController < ApplicationController
   # Perform the Code review for a given commit hash
   def code_review_commit
     @back = params[:back_url]
+    # if we came from an Issue page
+    @issue_id = params[:issue_id]
     # ge the changeset
     commit_hash = params[:commit_hash]
     puts "Got commit hash: #{commit_hash}"
@@ -313,19 +315,53 @@ class IssuesAiController < ApplicationController
   end
 
   def save_code_review
-    commit = params[:commit_hash]
     review = params[:review]
     back = params[:back_url]
 
-    puts "[issues_ai] Save new Review for commit #{commit}"
+    # giving an issue_id saves it as a note
+    issue_id = params[:issue_id]
+    # else a commit_hash is required to save it as a file
+    commit = params[:commit_hash]
 
-    changeset = Changeset.find_by_revision(commit)
-    if changeset.nil?
-      flash[:error] = "Changeset not found"
+    # validation
+    if review.blank?
+      flash[:error] = "Review is required"
       return
     end
 
-    changeset.save_code_review_results(review)
+    if issue_id.blank? && commit.blank?
+      flash[:error] = "Issue ID or Commit hash is required"
+      return
+    end
+
+    # the save logic
+    if !commit.blank?
+      puts "[issues_ai] Save new Review for commit #{commit}"
+
+      changeset = Changeset.find_by_revision(commit)
+      if changeset.nil?
+        flash[:error] = "Changeset not found"
+        return
+      end
+
+      changeset.save_code_review_results(review)
+    else
+      puts "[issues_ai] Save new Review for issue #{issue_id}"
+      issue = Issue.find_by_id(issue_id)
+      if issue.nil?
+        flash[:error] = "Issue not found"
+        return
+      end
+      # save the review as a note
+      journal = issue.init_journal(User.current)
+      # prefix the review with a title
+      review = "# AI Code Review:\n\n#{review}"
+      journal.notes = review
+      issue.save!
+      # in this case always redirect to the issue
+      redirect_to issue
+      return
+    end
     redirect_to back
   end
 

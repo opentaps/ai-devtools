@@ -5,16 +5,24 @@
 <% end %>
 
 <% if @review %>
-<h3>Code Review</h3>
-<div>
-    <%= textilizable(@review) %>
-</div>
+    <h3>Code Review</h3>
+    <div>
+        <%= textilizable(@review) %>
+    </div>
     <% if @changeset && @previous_review %>
         <%= form_tag '/issues_ai/save_code_review', method: :post do %>
             <%= hidden_field_tag 'commit_hash', @changeset.identifier %>
             <%= hidden_field_tag 'review', @review %>
             <%= hidden_field_tag 'back_url', @back %>
             <%= submit_tag 'Save' %>
+        <% end %>
+    <% end %>
+    <% if @issue_id && !@changeset %>
+        <%= form_tag '/issues_ai/save_code_review', method: :post do %>
+            <%= hidden_field_tag 'issue_id', @issue_id %>
+            <%= hidden_field_tag 'review', @review %>
+            <%= hidden_field_tag 'back_url', @back %>
+            <%= submit_tag 'Save as Note' %>
         <% end %>
     <% end %>
 <% end %>
