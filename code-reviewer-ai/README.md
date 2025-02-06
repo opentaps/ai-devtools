@@ -15,6 +15,11 @@
   ```
 - Check the `post-receive` script for which branch to monitor (default is `refs/heads/staging`)
 - Configure environment variables in the `.env` file for the python script (see `.env.SAMPLE`)
+- Create the `code_review/` directory in the repository root
+  ```bash
+  mkdir code_review
+  ```
+- Copy the `prompt.txt` to the `code_review/` directory
 - Edit the `code-review-cronjob.sh` script to set the `SCRIPT_PATH` at the top of the file
 - Add the `code-review-cronjob.sh <git_repo directory>` script to your server's cron jobs, recommended every 5 or 10 minutes
 
