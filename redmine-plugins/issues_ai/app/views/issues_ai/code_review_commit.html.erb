@@ -1,19 +1,27 @@
 <% html_title "AI Code review"  %>
+<% content_for :header_tags do -%>
+    <%= stylesheet_link_tag "scm" -%>
+    <%= javascript_include_tag 'code_review', plugin: 'issues_ai' %>
+<% end -%>
 
+<div id="layout" style="display:flex; flex-direction: column">
 <%if @combined_diff %>
-    <% content_for :header_tags do -%>
-        <%= stylesheet_link_tag "scm" -%>
-    <% end -%>
-    <h3>Code Changes</h3>
-    <%= render :partial => 'common/diff',
-        :locals => {:diff => @combined_diff, :diff_type => 'inline', :diff_style => nil} %>
+    <div id="diff_box" class="box" style="overflow:auto; height:20em; resize: vertical">
+        <h3>Code Changes</h3>
+        <%= render :partial => 'common/diff',
+            :locals => {:diff => @combined_diff, :diff_type => 'inline', :diff_style => nil} %>
+    </div>
 <% end %>
 
 <% if @review %>
-    <h3>AI Code Review</h3>
-    <div>
+    <div id="review_box" class="box" style="overflow:auto; flex: 1; min-width: 20em;">
+        <div style="display:flex; justify-content: space-between">
+            <h3>AI Code Review</h3>
+            <button id="toggle_layout">View Side by Side</button>
+        </div>
         <%= textilizable(@review) %>
     </div>
+</div>
     <% if @changeset && @previous_review %>
         <%= form_tag '/issues_ai/save_code_review', method: :post do %>
             <%= hidden_field_tag 'commit_hash', @changeset.identifier %>
