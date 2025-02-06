@@ -1,17 +1,18 @@
 <table>
   <tbody>
       <tr>
-          <th>API Url</th>
+          <th>API Url <span class="required"> *</span></th>
           <td>
               <input type="text" id="settings_api_url"
                   value="<%= settings['api_url'] %>"
                   placeholder="https://api.openai.com/v1"
                   size="30"
                   name="settings[api_url]" >
+              <span class="icon icon-help" title="The base URL for any OpenAI compatible APIs">&nbsp;</span>
           </td>
       </tr>
       <tr>
-          <th>API Key</th>
+          <th>API Key <span class="required"> *</span></th>
           <td>
               <input type="password" id="settings_api_key"
                   value="<%= settings['api_key'] %>"
@@ -21,7 +22,7 @@
           </td>
       </tr>
       <tr>
-          <th>Model</th>
+          <th>Model <span class="required"> *</span></th>
           <td>
               <input type="text" id="settings_model"
                   value="<%= settings['model'] %>"
@@ -38,6 +39,7 @@
                   size="30"
                   placeholder="gpt-3.5-turbo"
                   name="settings[tool_model]" >
+              <span class="icon icon-help" title="Optional: use this model when doing tool invocations, ususally OpenAI models work best here.">&nbsp;</span>
           </td>
       </tr>
       <tr>
@@ -49,6 +51,7 @@
                   step="0.01"
                   placeholder="0.2"
                   name="settings[temperature]" >
+              <a class="icon icon-help" title="Optional: change the model default temperature." href="https://platform.openai.com/docs/api-reference/chat#chat-create-temperature" target="_blank">&nbsp;</a>
           </td>
       </tr>
       <tr>
@@ -59,6 +62,7 @@
                   min="0"
                   placeholder="2000"
                   name="settings[max_tokens]" >
+              <a class="icon icon-help" title="Optional: limit the amount of output tokens." href="https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens" target="_blank">&nbsp;</a>
           </td>
       </tr>
       <tr>
