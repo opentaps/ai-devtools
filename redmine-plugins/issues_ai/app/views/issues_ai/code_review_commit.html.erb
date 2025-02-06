@@ -1,11 +1,16 @@
-<% html_title "Code review"  %>
+<% html_title "AI Code review"  %>
 
 <%if @combined_diff %>
-<pre><%= @combined_diff %></pre>
+    <% content_for :header_tags do -%>
+        <%= stylesheet_link_tag "scm" -%>
+    <% end -%>
+    <h3>Code Changes</h3>
+    <%= render :partial => 'common/diff',
+        :locals => {:diff => @combined_diff, :diff_type => 'inline', :diff_style => nil} %>
 <% end %>
 
 <% if @review %>
-    <h3>Code Review</h3>
+    <h3>AI Code Review</h3>
     <div>
         <%= textilizable(@review) %>
     </div>
@@ -28,7 +33,7 @@
 <% end %>
 
 <% if @previous_review %>
-<h3>Previous Code Review</h3>
+<h3>Previous AI Code Review</h3>
 <div>
     <%= textilizable(@previous_review) %>
 </div>
