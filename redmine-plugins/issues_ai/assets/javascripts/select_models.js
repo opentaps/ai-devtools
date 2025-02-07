@@ -44,12 +44,13 @@ function openModelsModal(targetId, options) {
         );
         list.append(dt);
       }
+      showModal(modalId, "500px");
     },
     error: function (xhr) {
       list.empty();
       list.append('<div class="error flash">Error: ' + xhr.statusText + ". Please check the API URL and Keys are correct. Note that not all providers support listing the available models via the API.</dt>");
+
+      showModal(modalId, "500px");
     },
   });
-
-  showModal(modalId, "500px");
 }
