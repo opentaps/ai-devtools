@@ -161,7 +161,7 @@ module IssuesAiTools
     type: :function,
     function: {
       name: "get_tickets",
-      description: "Get tickets from the Redmine API",
+      description: "Get tickets/tasks/bug reports from the Redmine API",
       parameters: {
         type: :object,
         properties: {
