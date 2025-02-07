@@ -455,6 +455,8 @@ class IssuesAiController < ApplicationController
         )
         msg = response.dig("choices", 0, "message")
         tool_calls = msg.dig("tool_calls")
+        # usefull for debugging and to show the user what was called
+        @functions_called = []
         if tool_calls
           puts "Response tool calls count: #{tool_calls.length}"
           # For a subsequent message with the role "tool", OpenAI requires
@@ -471,8 +473,14 @@ class IssuesAiController < ApplicationController
               tool_call.dig("function", "arguments"),
               { symbolize_names: true },
             )
+
             puts " > Try to call tool function_name: #{function_name} with #{function_args}"
             function_response = invoke_the_right_tool(function_name, function_args)
+            @functions_called << {
+              function_name: function_name,
+              arguments: function_args,
+              response: function_response
+            }
 
             if function_response
               # do no print the results as this could be a lot of text

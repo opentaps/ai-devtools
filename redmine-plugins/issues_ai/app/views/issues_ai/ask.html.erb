@@ -18,10 +18,33 @@
 
 <% if @answer %>
     <hr>
-    <div class="box" id="ask_ai_results">
-        <h3>Answer</h3>
-        <div>
-            <%= textilizable(@answer) %>
+    <div id="ask_ai_results">
+        <% if @functions_called # this is a list of {funxtion_name: ".." , arguments: "..", response: ".." } %>
+            <fieldset class="tabular collapsible collapsed">
+                <legend onclick="toggleFieldset(this);" class="icon icon-collapsed">
+                <%= sprite_icon("angle-right") %>
+                Functions Called
+                </legend>
+                <div style="display: none;">
+                    <% @functions_called.each do |function| %>
+                        <fieldset class="tabular collapsible collapsed">
+                            <legend onclick="toggleFieldset(this);" class="icon icon-collapsed">
+                                <%= sprite_icon("angle-right") %>
+                                <strong><%= function[:function_name] %></strong> &nbsp;<%= function[:arguments] %>
+                            </legend>
+                            <div class="box" style="display: none;">
+                                <%= textilizable(function[:response]) %>
+                            </div>
+                        </fieldset>
+                    <% end %>
+                </div>
+            </fieldset>
+        <% end %>
+        <div class="box">
+            <h3>Answer</h3>
+            <div>
+                <%= textilizable(@answer) %>
+            </div>
         </div>
     </div>
 <% end %>
