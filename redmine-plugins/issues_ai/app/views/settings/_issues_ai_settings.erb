@@ -1,3 +1,10 @@
+<% content_for :header_tags do %>
+  <%= javascript_include_tag 'select_models', plugin: 'issues_ai' %>
+  <%= stylesheet_link_tag 'select_models', plugin: 'issues_ai' %>
+<% end %>
+
+<%= render partial: 'issues_ai/select_models' %>
+
 <table>
   <tbody>
       <tr>
@@ -29,6 +36,8 @@
                   size="30"
                   placeholder="gpt-3.5-turbo"
                   name="settings[model]" >
+              <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('settings_model', {api_key: $('#settings_api_key').val(), api_url: $('#settings_api_url').val()}); return false;", :href => '#' %>
+
           </td>
       </tr>
       <tr>
@@ -40,6 +49,7 @@
                   placeholder="gpt-3.5-turbo"
                   name="settings[tool_model]" >
               <span class="icon icon-help" title="Optional: use this model when doing tool invocations, ususally OpenAI models work best here.">&nbsp;</span>
+              <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('settings_tool_model', {api_key: $('#settings_api_key').val(), api_url: $('#settings_api_url').val()}); return false;", :href => '#' %>
           </td>
       </tr>
       <tr>

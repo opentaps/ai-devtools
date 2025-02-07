@@ -562,10 +562,13 @@ class IssuesAiController < ApplicationController
   end
 
   def list_models
+    # allow the api key and url to be given as parameters
+    api_key = params[:api_key] || Setting.plugin_issues_ai['api_key']
+    api_url = params[:api_url] || Setting.plugin_issues_ai['api_url']
     # call the openai API
     client = OpenAI::Client.new(
-      access_token: Setting.plugin_issues_ai['api_key'],
-      uri_base: Setting.plugin_issues_ai['api_url'],
+      access_token: api_key,
+      uri_base: api_url,
     )
 
     # get the models from the openAI api

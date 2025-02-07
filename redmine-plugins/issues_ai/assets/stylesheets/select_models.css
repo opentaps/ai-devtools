@@ -1,0 +1,11 @@
+#list_models {
+    display: none;
+}
+#list_models dt {
+    font-weight: bold;
+    text-decoration: underline;
+}
+#list_models dd {
+    margin: 0;
+    padding: 0 0 1em 0;
+}
