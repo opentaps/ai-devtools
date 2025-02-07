@@ -441,6 +441,7 @@ class IssuesAiController < ApplicationController
         role: :user,
         content: prompt
       }]
+      prompt_changed = false
 
       # run the prompt and check for function calls
       begin
@@ -454,35 +455,45 @@ class IssuesAiController < ApplicationController
         )
         msg = response.dig("choices", 0, "message")
         tool_calls = msg.dig("tool_calls")
-        puts "Response tool calls: #{tool_calls}"
         if tool_calls
+          puts "Response tool calls count: #{tool_calls.length}"
+          # For a subsequent message with the role "tool", OpenAI requires
+          # the preceding message to have a tool_calls argument.
+          messages << msg
+          # indicate we need to repeat the user prompt at the end
+          prompt_changed = true
+          # then add the tool call results to the messages
           tool_calls.each do |tool_call|
+            puts " - tool call: #{tool_call}"
             tool_call_id = tool_call.dig("id")
             function_name = tool_call.dig("function", "name")
             function_args = JSON.parse(
               tool_call.dig("function", "arguments"),
               { symbolize_names: true },
             )
-            puts "Try to call tool function_name: #{function_name} with #{function_args}"
+            puts " > Try to call tool function_name: #{function_name} with #{function_args}"
             function_response = invoke_the_right_tool(function_name, function_args)
 
             if function_response
               # do no print the results as this could be a lot of text
               # but check the length:
 
-              puts "Called function #{function_name} successfully with response length: #{function_response.length}"
-              # For a subsequent message with the role "tool", OpenAI requires
-              # the preceding message to have a tool_calls argument.
-              messages << msg
-
-              messages << {
-                tool_call_id: tool_call_id,
-                role: :tool,
-                name: function_name,
-                content: function_response
-              }
+              puts " = Called function #{function_name} successfully with response length: #{function_response.length}"
+            else
+              puts " = Failed to call function #{function_name}"
+              function_response = "Failed to call function #{function_name}."
             end
+
+            # always add the tool call result to the messages
+            messages << {
+              tool_call_id: tool_call_id,
+              role: :tool,
+              name: function_name,
+              content: function_response
+            }
           end
+        else
+          puts "No tool calls found"
         end
       rescue => e
         # print the error
@@ -500,6 +511,7 @@ class IssuesAiController < ApplicationController
       prompt = prompt.gsub(/#(\d+)/) do |match|
         issue = Issue.find_by_id($1)
         if issue
+          prompt_changed = true
           format_issue_for_llm(issue)
         else
           match
@@ -509,6 +521,7 @@ class IssuesAiController < ApplicationController
       prompt = prompt.gsub(/\[\[(.+)\]\]/) do |match|
         page = Wiki.find_page($1, :project => @project)
         if page
+          prompt_changed = true
           "Document: #{page.title}\nContent: #{page.content.text}\n\n"
         else
           match
@@ -517,10 +530,12 @@ class IssuesAiController < ApplicationController
 
       # append the prompt to the previous messages that inluded the tool calls
       # and results
-      messages << {
-        role: :user,
-        content: prompt
-      }
+      if prompt_changed
+        messages << {
+          role: :user,
+          content: prompt
+        }
+      end
 
       begin
         response = client.chat(
@@ -557,10 +572,9 @@ class IssuesAiController < ApplicationController
         puts e.backtrace
         flash[:error] = e.message
       end
-
-      # For testing return the prompt
-      # @answer = prompt
     end
+
+    puts "Answer: #{@answer}"
 
     respond_to do |format|
       format.html {render :action => 'ask', :layout => !request.xhr?}
