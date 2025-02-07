@@ -29,19 +29,32 @@ Commit Message:
 </commits>
 
 Provide feedback in this format for each part of the changes:
-[SOURCE]
-- display the commit author
-- display the file path and commit message (when commenting on a particular commit)
 
-[Commit Message Review] (if applicable)
-- [Good/Bad] Point 1
-- [Good/Bad] Point 2
+## Code Changes Review (as many items as needed to cover all the issues)
+- [Critical/High/Medium/Low] In `file path`: Issue 1
+- [Critical/High/Medium/Low] In `file path`: Issue 2
+- [Critical/High/Medium/Low] In `file path`: Issue 3
+- [Critical/High/Medium/Low] In `file path`: Issue 4
+- [Critical/High/Medium/Low] In `file path`: Issue 5
+- ...
+- [Critical/High/Medium/Low] In `file path`: Issue N
+
+## Commit Messages Review (if applicable)
+- [Bad] <commit hash>: <commit message> Issue 1
+- [Bad] <commit hash>: <commit message> Issue 2
 - ...
 
-[Code Review] (more important)
-- [Critical/High/Medium/Low] Issue 1
-- [Critical/High/Medium/Low] Issue 2
+## Recommended Code Fixes (only for typo or logic errors)
+- In `file path` [very short description of the fix]: Write the recommended fix in diff format
 - ...
+- In `file path` [very short description of the fix]: Write the recommended fix in diff format
 
+## Recommended Changes (if needed)
+- Describe changes that would improve the code or the feature being worked on, unless already addressed in the previous section.
+
+## Recommended Tests (if needed)
+- Describe unit tests that could be added, only for non-obvious cases.
+
+## Summary
 [Summary] (final thoughts for the overall changes)
 Overall assessment and recommendations. Is there anything that needs to be addressed before merging?
