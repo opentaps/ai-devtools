@@ -573,7 +573,9 @@ class IssuesAiController < ApplicationController
 
     # get the models from the openAI api
     response = client.models.list
+    # extract the model ids and sort them
     @models = response['data'].map { |model| model['id'] }
+    @models.sort!
 
     render json: { models: @models }
   end
