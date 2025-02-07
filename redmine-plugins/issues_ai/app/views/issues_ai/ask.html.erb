@@ -23,7 +23,7 @@
             <fieldset class="tabular collapsible collapsed">
                 <legend onclick="toggleFieldset(this);" class="icon icon-collapsed">
                 <%= sprite_icon("angle-right") %>
-                Functions Called
+                <%= @functions_called.length %> Functions Called
                 </legend>
                 <div style="display: none;">
                     <% @functions_called.each do |function| %>
