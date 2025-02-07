@@ -194,7 +194,7 @@ module IssuesAiTools
 
   # convert a Redmine issue to a format that the LLM can understand
   def format_issue_for_llm(r)
-    "### Ticket ID: ##{r.id}\n  Title: #{r.subject}\n  Description: #{r.description}\n  Type: #{r.tracker.nil? ? 'N/A' : r.tracker.name}\n  Status: #{r.status.nil? ? 'N/A' : r.status.name}\n  Created on: #{r.created_on}\n  #{r.assigned_to.nil? ? 'Not assigned' : 'Assigned to: ' + r.assigned_to.name}\n\n"
+    "<ticket>**Ticket ID**: ##{r.id}\n *Title*: #{r.subject}\n *Type*: #{r.tracker.nil? ? 'N/A' : r.tracker.name}\n *Priority*: #{r.priority.blank? ? 'N/A' : r.priority}\n *Status*: #{r.status.nil? ? 'N/A' : r.status.name}\n *Created on*: #{r.created_on}\n  #{r.assigned_to.nil? ? 'Not assigned' : '*Assigned to*: ' + r.assigned_to.name}\n *Description*: #{r.description}</ticket>\n\n"
   end
 
   # Invoke the right tool based on the function_name
