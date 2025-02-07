@@ -1,7 +1,11 @@
 <% content_for :header_tags do %>
   <%= javascript_include_tag 'issues_ai', plugin: 'issues_ai' %>
   <%= stylesheet_link_tag 'issues_ai', plugin: 'issues_ai' %>
+  <%= javascript_include_tag 'select_models', plugin: 'issues_ai' %>
+  <%= stylesheet_link_tag 'select_models', plugin: 'issues_ai' %>
 <% end %>
+
+<%= render partial: 'issues_ai/select_models' %>
 
 <% html_title "Ask AI" %>
 <h3>Ask AI</h3>

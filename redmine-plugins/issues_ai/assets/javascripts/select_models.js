@@ -6,6 +6,7 @@ function selectModel(model, modalId, targetId) {
 
 function openModelsModal(targetId, options) {
   // default modalId 'list_models'
+  if (!options) options = {};
   var modalId = options.modalId || "list_models";
   // take the api_key and api_url from the options
   var data = {};

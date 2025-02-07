@@ -8,6 +8,7 @@
 <p>
     <%= label_tag 'model', 'Model' %>
     <%= text_field_tag 'model', @model, size: 40, maxlength: 255, required: true %>
+    <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('model'); return false;", :href => '#' %>
 </p>
 <p>
     <%= label_tag 'question', 'Question' %>
