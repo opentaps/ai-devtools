@@ -15,17 +15,7 @@ Redmine does not offer all the hooks needed, so here are a couple of manual patc
 <div>
     <h3>AI Code Review</h3>
     <% begin %>
-        <%if @changeset.has_code_review_results? %>
-            <%= textilizable(@changeset.code_review_results) %>
-        <%elsif @changeset.has_code_review_queued? %>
-            Pending AI Code Review ... (please check again in a few minutes)
-        <%else%>
-            <%= link_to 'Queue an AI Code Review', '/issues_ai/queue_review?commit=' + @changeset.identifier %>
-        <%end%>
-        <%= form_tag '/issues_ai/code_review_commit', method: :post do %>
-            <%= hidden_field_tag 'hash', @changeset.identifier %>
-            <%= submit_tag 'Review Now' %>
-        <% end %>
+        <%= call_hook(:view_issues_history_changeset_bottom, { :changeset => @changeset }) %>
     <% rescue => e%>
         <div>Exception in erb template: <%= e %></div>
     <% end %>
@@ -35,7 +25,9 @@ Redmine does not offer all the hooks needed, so here are a couple of manual patc
 
 - Add the following at the end of `app/views/issues/tabs/_changesets.html.erb`:
 ```
+<!-- CUSTOM INSERTED CODE -->
 <%= call_hook(:view_issues_history_changesets_bottom, { :changesets => @changesets }) %>
+<!-- /CUSTOM INSERTED CODE -->
 ```
 
 == Configuration
@@ -68,3 +60,15 @@ issues and wiki pages as context in the following way:
 - `#123` will inject the content of issue 123,
 - issues injected will be including ID / Subject / Description / Tracker / Status / Created Date / Assigned
 - issues can also be injected based on natural language queries like 'new feature issues over the last month'
+
+=== Code Review
+
+The Code Review feature is available in the following places:
+- In the Issue view, in the 'Associated revisions' section (eg: `/issues/2121?tab=changesets`)
+- In the Revisiton view (eg: `/projects/my_prject_name/repository/my_repository/revisions/1bc93040...f9d18a53f`)
+
+There you can `Queue an AI Code Review` or `Review Now` a specific commit.
+
+In addition, you can also use the `Review All` button to review all the commits in the Issue view in the 'Associated revisions' section.
+This creates a Review off all the commits associated to the Issue and provides a summary of the overall changes.
+This review can then by Saved as a Note on the Issue itself.
