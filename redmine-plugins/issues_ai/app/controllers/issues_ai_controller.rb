@@ -565,17 +565,22 @@ class IssuesAiController < ApplicationController
     # allow the api key and url to be given as parameters
     api_key = params[:api_key] || Setting.plugin_issues_ai['api_key']
     api_url = params[:api_url] || Setting.plugin_issues_ai['api_url']
-    # call the openai API
-    client = OpenAI::Client.new(
-      access_token: api_key,
-      uri_base: api_url,
-    )
 
-    # get the models from the openAI api
-    response = client.models.list
-    # extract the model ids and sort them
-    @models = response['data'].map { |model| model['id'] }
-    @models.sort!
+    # cache the models for 1 hour given the parameters as Key
+    cache_key = "list_models_#{api_key}_#{api_url}"
+    @models = Rails.cache.fetch(cache_key, expires_in: 1.hour) do
+      # call the openai API
+      client = OpenAI::Client.new(
+        access_token: api_key,
+        uri_base: api_url,
+      )
+
+      # get the models from the openAI api
+      response = client.models.list
+      # extract the model ids and sort them
+      models = response['data'].map { |model| model['id'] }
+      models.sort!
+    end
 
     render json: { models: @models }
   end
