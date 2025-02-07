@@ -45,6 +45,10 @@
             <div>
                 <%= textilizable(@answer) %>
             </div>
+            <% # add a button to copy the @answer to the clipboard using JS and a hidden textarea %>
+            <textarea id="copy_answer" style="position:absolute;width:0;height:0;left:-9999px"><%= @answer %></textarea>
+            <button id="copy_answer_btn" onclick="$('textarea#copy_answer').select(); document.execCommand('copy');$('#copied').show().delay(1000).fadeOut(1000)">Copy Answer</button>
+            <span id="copied" style="display:none;">Copied!</span>
         </div>
     </div>
 <% end %>
