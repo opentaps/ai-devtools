@@ -242,7 +242,7 @@ class IssuesAiController < ApplicationController
 
       # for analyzing multiple commits, we need to adapt the prompt
       if @changesets.length > 1
-        prompt += "\nNote that this is a combined analysis of multiple commits, you must therefore provide a more detailed review of the combined changes and not a commit per commit preview."
+        prompt += "\nNote that this is a combined analysis of multiple commits, you must therefore provide a more detailed review of the combined changes. Do not do a commit per commit analysis unless a major issue is found in a particular commit."
       end
 
       puts "[issues_ai] Code Review Prompt: #{prompt}"
