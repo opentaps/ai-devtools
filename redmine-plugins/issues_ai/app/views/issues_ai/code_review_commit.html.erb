@@ -20,9 +20,17 @@
             <button id="toggle_layout">View Side by Side</button>
         </div>
         <%= textilizable(@review) %>
+        <%= form_tag '/issues_ai/code_review_commit', method: :post do %>
+            <%= hidden_field_tag 'commit_hash', @changesets.map(&:identifier).join(',') %>
+            <%if @issue_id %>
+                <%= hidden_field_tag 'issue_id', @issue_id %>
+            <% end %>
+            <%= hidden_field_tag 'back_url', @back %>
+            <%= submit_tag 'Generate Again' %>
+        <% end %>
     </div>
 </div>
-    <% if @changeset && @previous_review %>
+    <% if !@issue_id && @changeset && @previous_review %>
         <%= form_tag '/issues_ai/save_code_review', method: :post do %>
             <%= hidden_field_tag 'commit_hash', @changeset.identifier %>
             <%= hidden_field_tag 'review', @review %>
@@ -40,7 +48,7 @@
     <% end %>
 <% end %>
 
-<% if @previous_review %>
+<% if !@issue_id && @previous_review %>
 <h3>Previous AI Code Review</h3>
 <div>
     <%= textilizable(@previous_review) %>
