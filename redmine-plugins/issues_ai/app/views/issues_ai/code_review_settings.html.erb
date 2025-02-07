@@ -15,8 +15,7 @@
                     <label for="prompt">
                         Prompt
                         <span style="display:block;font-size:small;font-weight:normal">
-                            must include <i>&lt;commit&gt;&lt;/commit&gt;</i>
-                            where you can use the following placeholders:
+                            you can use the following placeholders:
                             <i>{hash}</i>
                             <i>{author}</i>
                             <i>{date}</i>
@@ -27,6 +26,27 @@
                     </label>
                     <%= text_area_tag 'prompt',
                         @prompt,
+                        :cols => 100,
+                        :rows => 30,
+                        :accesskey => accesskey(:edit)
+                    %>
+                </p>
+                <p>
+                    <label for="prompt_multi">
+                        Prompt for Multiple Commits
+                        <span style="display:block;font-size:small;font-weight:normal">
+                            must include <i>&lt;commit&gt;&lt;/commit&gt;</i>
+                            where you can use the following placeholders:
+                            <i>{hash}</i>
+                            <i>{author}</i>
+                            <i>{date}</i>
+                            <i>{subject}</i>
+                            <i>{body}</i>
+                            <i>{diff}</i>
+                        </span>
+                    </label>
+                    <%= text_area_tag 'prompt_multi',
+                        @prompt_multi,
                         :cols => 100,
                         :rows => 30,
                         :accesskey => accesskey(:edit)

@@ -1,0 +1,47 @@
+Perform a code review with these requirements:
+1. Analyze the code changes given in diff format for the following:
+   - Potential bugs or logical errors in the new code
+   - Typos and syntax issues (only in the added code)
+   - Security vulnerabilities (but do not mention non-existing versions because as a LLM you can't know them)
+   - Performance improvements
+   - Code style violations (only in the added code)
+   - Code readability and maintainability (only in the added code)
+2. Only review the changes made in the commit and not the preexisting code that was provided for context.
+3. In the Code Review section, only enumerate issues that would need to be addressed and do not just comment or enumerate on the positive aspects.
+4. Verify commit messages:
+   - Must start with # followed by ticket number (e.g., #1234)
+   - Exception: 'chore' or 'trivial' in message allows missing ticket
+   - Check for proper imperative mood and clarity
+   - Accurately describe the changes made in the commit
+5. Focus on the overall changes and not just the individual commits.
+
+<commits>
+<commit>
+Commit {hash} from {author}
+
+Code Diff:
+{diff}
+
+Commit Message:
+{subject}
+{body}
+</commit>
+</commits>
+
+Provide feedback in this format for each part of the changes:
+[SOURCE]
+- display the commit author
+- display the file path and commit message (when commenting on a particular commit)
+
+[Commit Message Review] (if applicable)
+- [Good/Bad] Point 1
+- [Good/Bad] Point 2
+- ...
+
+[Code Review] (more important)
+- [Critical/High/Medium/Low] Issue 1
+- [Critical/High/Medium/Low] Issue 2
+- ...
+
+[Summary] (final thoughts for the overall changes)
+Overall assessment and recommendations. Is there anything that needs to be addressed before merging?

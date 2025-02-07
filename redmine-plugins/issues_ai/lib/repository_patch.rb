@@ -27,6 +27,12 @@ module RepositoryPatch
         return self.url + '/code_review/prompt.txt'
       end
     end
+    # Path to the prompt for code reviews of multiple commits
+    def code_review_prompt_multi_path
+      unless self.url.blank?
+        return self.url + '/code_review/prompt_multi.txt'
+      end
+    end
 
     # Path to the code review result directory
     def code_review_results_path
@@ -62,6 +68,21 @@ module RepositoryPatch
       path = code_review_prompt_path
       return nil if path.nil?
       File.open(path, 'w') { |file| file.write(prompt) }
+    end
+
+    # Get the current prompt for multiple commits
+    def code_review_prompt_multi
+      path = code_review_prompt_multi_path
+      return nil if path.nil?
+      return nil unless File.exist?(path)
+      # return the file contents
+      File.read(path)
+    end
+    # Set the current prompt for multiple commits
+    def code_review_prompt_multi=(prompt_multi)
+      path = code_review_prompt_multi_path
+      return nil if path.nil?
+      File.open(path, 'w') { |file| file.write(prompt_multi) }
     end
   end
 end

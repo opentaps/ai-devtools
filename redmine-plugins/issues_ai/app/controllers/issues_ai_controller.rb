@@ -134,6 +134,7 @@ class IssuesAiController < ApplicationController
       end
 
       @prompt = @repository.code_review_prompt
+      @prompt_multi = @repository.code_review_prompt_multi
     end
 
     # check if this was a POST
@@ -147,7 +148,13 @@ class IssuesAiController < ApplicationController
         flash[:error] = "Prompt is required"
         return
       end
+      @prompt_multi = params[:prompt_multi]
+      if @prompt_multi.blank?
+        flash[:error] = "Prompt for Multiple commits is required"
+        return
+      end
       @repository.code_review_prompt = @prompt
+      @repository.code_review_prompt_multi = @prompt_multi
     end
   end
 
@@ -191,6 +198,11 @@ class IssuesAiController < ApplicationController
     end
 
     prompt = repository.code_review_prompt
+    # for analyzing multiple commits, we need to adapt the prompt
+    if @changesets.length > 1
+      prompt = repository.code_review_prompt_multi
+    end
+
     if prompt.blank?
       flash[:error] = "Code review prompt not found for this repository"
       return
@@ -238,11 +250,6 @@ class IssuesAiController < ApplicationController
       if @combined_diff.nil?
         flash[:error] = "No changeset data found"
         return
-      end
-
-      # for analyzing multiple commits, we need to adapt the prompt
-      if @changesets.length > 1
-        prompt += "\nNote that this is a combined analysis of multiple commits, you must therefore provide a more detailed review of the combined changes. Do not do a commit per commit analysis unless a major issue is found in a particular commit."
       end
 
       puts "[issues_ai] Code Review Prompt: #{prompt}"
