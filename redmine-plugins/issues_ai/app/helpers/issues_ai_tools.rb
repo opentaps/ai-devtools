@@ -101,23 +101,25 @@ module IssuesAiTools
     if tracker != '' && tracker != 'all'
       # find the tracker id
       # 1: bug, 2: feature, 3: support, 4: long_term, 5: test
-      tracker_id = case tracker
+      tracker_ids = case tracker
         when 'bug'
-          1
+          [1]
         when 'feature'
-          2
+          [2]
         when 'support'
-          3
+          [3]
         when 'long_term'
-          4
+          [4]
         when 'test'
-          5
+          [5]
+        when 'task'
+          [1,2,3,4,5]
       else
         nil
       end
 
-      unless tracker_id.nil?
-        res = res.where("tracker_id = ?", tracker_id)
+      unless tracker_ids.nil?
+        res = res.where("tracker_id IN (?)", tracker_ids)
         has_conditions = true
       end
     end
@@ -161,7 +163,7 @@ module IssuesAiTools
     type: :function,
     function: {
       name: "get_tickets",
-      description: "Get tickets/tasks/bug reports from the Redmine API",
+      description: "Find our tickets, tasks and/or bug reports in our system that match the given parameters",
       parameters: {
         type: :object,
         properties: {
@@ -171,13 +173,13 @@ module IssuesAiTools
           },
           status: {
             type: :string,
-            description: "Only return tickets with this status",
+            description: "Only return tickets with this status, can be 'all', 'open' or 'closed'",
             enum: %w[all open closed],
           },
           tracker: {
             type: :string,
-            description: "Only return tickets with this tracker",
-            enum: %w[all bug feature support long_term test],
+            description: "Only return tickets with this tracker, can be 'all', 'bug', 'feature', 'support', 'long_term', 'test', 'task'",
+            enum: %w[all bug feature support long_term test task],
           },
           limit: {
             type: :number,
