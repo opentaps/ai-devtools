@@ -61,6 +61,10 @@ issues and wiki pages as context in the following way:
 - issues injected will be including ID / Subject / Description / Tracker / Status / Created Date / Assigned
 - issues can also be injected based on natural language queries like 'new feature issues over the last month'
 
+The AI also has access to the following tools as defined in `issues_ai/app/helpers/issues_ai_tools.rb`:
+- get_tickets: retreive tickets based on status / tracker / max_age_days / limit, this can be used to include tickets into the context based on a query like 'new feature issues over the last month' or 'the last 5 closed bugs'
+
+
 === Code Review
 
 The Code Review feature is available in the following places:
