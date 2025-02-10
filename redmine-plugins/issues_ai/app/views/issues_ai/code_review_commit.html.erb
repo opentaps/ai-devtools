@@ -1,4 +1,9 @@
-<% html_title "AI Code review"  %>
+<%if @issue_id %>
+    <% html_title "AI Code review ##{@issue_id}"  %>
+<% else %>
+    <% html_title "AI Code review"  %>
+<% end %>
+
 <% content_for :header_tags do -%>
     <%= stylesheet_link_tag "scm" -%>
     <%= javascript_include_tag 'code_review', plugin: 'issues_ai' %>
@@ -16,7 +21,11 @@
 <% if @review %>
     <div id="review_box" class="box" style="overflow:auto; flex: 1; min-width: 20em;">
         <div style="display:flex; justify-content: space-between">
-            <h3>AI Code Review</h3>
+            <%if @issue_id %>
+                <h3>AI Code Review <a href="/issues/<%= @issue_id %>">#<%= @issue_id %></a></h3>
+            <% else %>
+                <h3>AI Code Review </h3>
+            <% end %>
             <button id="toggle_layout">View Side by Side</button>
         </div>
         <%= textilizable(@review) %>
