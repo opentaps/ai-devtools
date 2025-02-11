@@ -7,8 +7,10 @@
                         <option><%= settings['code_review_model'] %></option>
                         <option value="">----</option>
                     <% end %>
-                    <% settings['models']['name'].each_with_index do |m,midx| %>
-                        <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
+                    <% if settings.dig('models', 'name') %>
+                        <% settings['models']['name'].each_with_index do |m,midx| %>
+                            <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
+                        <% end %>
                     <% end %>
                 </select>
                 <span class="icon icon-help" title="Optional: use this model by default, if not set the first configured model is used.">&nbsp;</span>
