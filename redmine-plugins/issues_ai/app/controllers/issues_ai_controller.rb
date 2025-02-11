@@ -7,33 +7,13 @@ class IssuesAiController < ApplicationController
   def api
     puts "[issues_ai] in /api handler"
 
-    # validate the settings
-    api_url = Setting.plugin_issues_ai['api_url']
-    api_key = Setting.plugin_issues_ai['api_key']
-    model = Setting.plugin_issues_ai['model']
-    # those are optional but must be numbers
-    temperature = Setting.plugin_issues_ai['temperature']
-    max_tokens = Setting.plugin_issues_ai['max_tokens']
-
-    if api_url.blank? || api_key.blank? || model.blank?
+    # validate the settings, must have a default model
+    model = get_default_model()
+    if model.blank?
       render json: { error: 'Please configure the plugin settings: <a target="_blank" href="/settings/plugin/issues_ai">Configure</a>' }
       return
     end
     puts "[issues_ai] Checked required settings OK"
-
-    if temperature.blank?
-      temperature = 0.2
-    else
-      temperature = temperature.to_f
-    end
-
-    if max_tokens.blank?
-      max_tokens = 2000
-    else
-      max_tokens = max_tokens.to_i
-    end
-
-    puts "[issues_ai] Checked optionsl settings OK"
 
     # read the POST data
     data = JSON.parse(request.body.read)
@@ -81,25 +61,16 @@ class IssuesAiController < ApplicationController
 
     begin
       # call the openai API
-      client = OpenAI::Client.new(
-        access_token: api_key,
-        uri_base: api_url,
-      )
+      client = get_client(model)
+      parameters = get_chat_params(model)
+      parameters[:messages] = [{role: :user, content: prompt }]
 
       # insert them into the prompt with labels:
       prompt = "#{prompt}\n\nSubject: #{subject}\nContent: #{description}\n\nAnalysis:"
 
       puts "[issues_ai] Calling the API at #{api_url} with model #{model}, temperature #{temperature}, max_tokens #{max_tokens}"
       response = client.chat(
-        parameters: {
-          model: model,
-          temperature: temperature,
-          max_tokens: max_tokens,
-          messages: [{
-            "role": "user",
-            "content": prompt
-          }]
-        }
+        parameters: parameters
       )
       puts "[issues_ai] Got response"
       puts response
@@ -262,39 +233,28 @@ class IssuesAiController < ApplicationController
     end
 
     # validate the settings
-    api_url = Setting.plugin_issues_ai['api_url']
-    api_key = Setting.plugin_issues_ai['api_key']
-    model = Setting.plugin_issues_ai['model']
+    model = get_code_review_model()
     error = nil
-    if api_url.blank? || api_key.blank? || model.blank?
+    if model.blank?
       error = 'Please configure the plugin settings: <a target="_blank" href="/settings/plugin/issues_ai">Configure</a>'
     end
 
     unless error
       begin
         # call the openai API
-        client = OpenAI::Client.new(
-          access_token: api_key,
-          uri_base: api_url,
-        )
+        client = get_client(model)
 
-        puts "[issues_ai] Code Review Calling the API at #{api_url} with model #{model}"
-        response = client.chat(
-          parameters: {
-            model: model,
-            messages: [{
-              "role": "user",
-              "content": prompt
-            }]
-          }
-        )
+        puts "[issues_ai] Code Review model #{model}"
+        parameters = get_chat_params(model)
+        parameters[:messages] = [{role: :user, content: prompt }]
+        response = client.chat(parameters: parameters)
         puts "[issues_ai] Code Review Got response"
         # get the first choice
         @review = response.dig("choices", 0, "message", "content")
         puts "[issues_ai] Code Review Got result: #{@review}"
       rescue => e
         # print the error
-        error = "Error running prompt with tools: #{e.message}"
+        error = "Error running code review prompt: #{e.message}"
         puts error
         puts e
         puts e.backtrace
@@ -393,7 +353,7 @@ class IssuesAiController < ApplicationController
 
   # This is the ask, on GET we just render the view, on POST we also call the API and set @answer
   def ask
-    @model = Setting.plugin_issues_ai['model']
+    @model = ''
     @title = "Ask the AI"
     project_id = params[:project] || 'graciousstyle'
     @project = find_project(project_id)
@@ -403,7 +363,11 @@ class IssuesAiController < ApplicationController
       @model = params[:model]
     end
     if @model.blank?
-      @model = Setting.plugin_issues_ai['model']
+      @model = get_default_model()
+    end
+    if @model.blank?
+      flash[:error] = "Please configure the plugin settings: <a target='_blank' href='/settings/plugin/issues_ai'>Configure</a>"
+      return
     end
     # for tool calling check if we have a configured model
     @tool_model = Setting.plugin_issues_ai['tool_model']
@@ -421,22 +385,6 @@ class IssuesAiController < ApplicationController
         return
       end
 
-      # init the client
-      # run the prompt and check for function calls
-      begin
-        # call the API
-        client = OpenAI::Client.new(
-          access_token: Setting.plugin_issues_ai['api_key'],
-          uri_base: Setting.plugin_issues_ai['api_url'],
-        )
-      rescue => e
-        # print the error
-        puts "Error creating the client: #{e.message}"
-        puts e.backtrace
-        flash[:error] = e.message
-        return
-      end
-
       messages = [{
         role: :user,
         content: prompt
@@ -445,14 +393,12 @@ class IssuesAiController < ApplicationController
 
       # run the prompt and check for function calls
       begin
+        client = get_client(@tool_model)
+        parameters = get_chat_params(@tool_model)
+        parameters[:tools] = TOOLS
+        parameters[:messages] = messages
         # call the API
-        response = client.chat(
-          parameters: {
-            model: @tool_model,
-            messages: messages,
-            tools: TOOLS
-          }
-        )
+        response = client.chat(parameters: parameters)
         msg = response.dig("choices", 0, "message")
         tool_calls = msg.dig("tool_calls")
         # usefull for debugging and to show the user what was called
@@ -536,22 +482,48 @@ class IssuesAiController < ApplicationController
         end
       end
 
-      # append the prompt to the previous messages that inluded the tool calls
-      # and results
-      if prompt_changed
-        messages << {
-          role: :user,
-          content: prompt
-        }
-      end
-
       begin
-        response = client.chat(
-          parameters: {
-            model: @model,
-            messages: messages
+        # this is the final prompt
+        if @tool_model != @model
+          # check if we are changing provider
+          m1 = get_modeL_settings(@tool_model)
+          m2 = get_modeL_settings(@model)
+          if m1[:provider] != m2[:provider]
+            puts "Changing provider from #{m1[:provider]} to #{m2[:provider]}"
+            client = get_client(@model)
+            # when changing the model provider, we cannot have
+            # the messages with the tools as they all use different
+            # syntax and have dfferent expectations in the format ....
+            # instead we restart the conversation with the results
+            # we got from the tools injected as context in the original prompt
+            if @functions_called.length > 0
+              messages = []
+              preamble = "The following context was given by the function calling tools according to the user prompt:\n"
+              @functions_called.each do |f|
+                preamble += "\n#{f[:response]}\n"
+              end
+              preamble += "\n----------------\n"
+              messages << {
+                role: :assistant,
+                content: preamble
+              }
+              # force re-adding the prompt later
+              prompt_changed = true
+            end
+          end
+        end
+
+        # append the prompt to the previous messages that inluded the tool calls
+        # and results
+        if prompt_changed
+          messages << {
+            role: :user,
+            content: prompt
           }
-        )
+        end
+        parameters = get_chat_params(@model)
+        parameters[:messages] = messages
+        response = client.chat(parameters: parameters)
         @answer = response["choices"][0]["message"]["content"]
       rescue Faraday::Error => e
         puts "Faraday Error: #{e}"
@@ -559,7 +531,12 @@ class IssuesAiController < ApplicationController
           # could have a JSON with error=>message=>"the error"
           begin
             puts "Error response: #{e.response_body}"
-            error = e.response_body.dig("error", "message")
+            # sometimes response_body is an array
+            res = e.response_body
+            if res.is_a?(Array)
+              res = res[0]
+            end
+            error = res.dig("error", "message")
             if error
               flash[:error] = error
               return
@@ -591,9 +568,27 @@ class IssuesAiController < ApplicationController
   end
 
   def list_models
-    # allow the api key and url to be given as parameters
-    api_key = params[:api_key] || Setting.plugin_issues_ai['api_key']
-    api_url = params[:api_url] || Setting.plugin_issues_ai['api_url']
+    # allow the api key and url or the provider name to be given as parameters
+    api_key = params[:api_key]
+    api_url = params[:api_url]
+    provider = params[:provider]
+
+    unless provider.blank?
+      # find it in the setttings, where provider = setttings[providers][name]
+      idx = Setting.plugin_issues_ai['providers']['name'].find_index { |p| p == provider }
+      if idx
+        api_key = Setting.plugin_issues_ai['providers']['key'][idx]
+        api_url = Setting.plugin_issues_ai['providers']['url'][idx]
+      else
+        render json: { error: "Provider #{provider} not found" }
+        return
+      end
+    else
+      if api_key.blank? || api_url.blank?
+        render json: { error: 'Please provide the Provider Name or the API URL and Key' }
+        return
+      end
+    end
 
     # cache the models for 1 hour given the parameters as Key
     cache_key = "list_models_#{api_key}_#{api_url}"
@@ -612,5 +607,107 @@ class IssuesAiController < ApplicationController
     end
 
     render json: { models: @models }
+  end
+
+
+  private
+
+  def get_default_model()
+    model = Setting.plugin_issues_ai['model']
+    if defined?(model) && model.present?
+      return model
+    end
+    # else use the first model in the list
+    model = Setting.plugin_issues_ai.dig('models', 'name', 0)
+    return model || ""
+  end
+
+  def get_code_review_model()
+    model = Setting.plugin_issues_ai['code_review_model']
+    if defined?(model) && model.present?
+      return model
+    end
+    get_default_model()
+  end
+
+  def find_provider_idx(model_string)
+    # the model given as a string <provider>:<model>
+    # split it into provider and model
+    provider, model = model_string.split(':')
+    # find the provider in the setttings, where provider = setttings[providers][name]
+    Setting.plugin_issues_ai['providers']['name'].find_index { |p| p == provider }
+  end
+
+  def find_model_idx(model_string)
+    # the model given as a string <provider>:<model>
+    # split it into provider and model
+    provider, model = model_string.split(':')
+    puts "[find_model_idx] Finding model #{model} with provider #{provider}"
+    # find the model that matches both the name and the provider (in case there are multiple of each)
+    indexes = Setting.plugin_issues_ai['models']['name'].each_index.select { |i| Setting.plugin_issues_ai['models']['name'][i] == model && Setting.plugin_issues_ai['models']['provider'][i] == provider }
+
+    # if empty
+    if indexes.length == 0
+      raise "Model not found #{model_string}"
+    end
+    idx = indexes[0]
+    puts "[find_model_idx] Found model at index #{idx}: #{Setting.plugin_issues_ai['models']['provider'][idx]} / #{Setting.plugin_issues_ai['models']['name'][idx]}"
+    return idx
+  end
+
+
+  def get_client(model_string)
+    # find the provider in the setttings, where provider = setttings[providers][name]
+    idx = find_provider_idx(model_string)
+    unless idx
+      raise "Provider not found for #{model_string}"
+    end
+
+    provider = Setting.plugin_issues_ai['providers']['name'][idx]
+    api_key = Setting.plugin_issues_ai['providers']['key'][idx]
+    api_url = Setting.plugin_issues_ai['providers']['url'][idx]
+
+    puts "[get_client] Using provider #{provider} with url #{api_url}"
+
+    OpenAI::Client.new(
+      access_token: api_key,
+      uri_base: api_url,
+    )
+  end
+
+  def get_modeL_settings(model_string)
+    puts "[get_modeL_settings] Finding model #{model_string}"
+    # find all the settings for the model, in a hash with name, provider, temperature, max_tokens
+    idx = find_model_idx(model_string)
+    unless idx
+      raise "Model #{model_string} not found"
+    end
+
+    {
+      model: Setting.plugin_issues_ai['models']['name'][idx],
+      provider: Setting.plugin_issues_ai['models']['provider'][idx],
+      temperature: Setting.plugin_issues_ai['models']['temperature'][idx],
+      max_tokens: Setting.plugin_issues_ai['models']['max_tokens'][idx]
+    }
+  end
+
+
+  def get_chat_params(model_string)
+    model_settings = get_modeL_settings(model_string)
+    params = {
+      model: model_settings[:model]
+    }
+
+    # temperature and max_tokens are optional
+    if defined?(model_settings[:temperature]) && model_settings[:temperature].present?
+      params[:temperature] = model_settings[:temperature]
+    end
+    if defined?(model_settings[:max_tokens]) && model_settings[:max_tokens].present?
+      params[:max_tokens] = model_settings[:max_tokens]
+    end
+
+    puts "[get_chat_params] Using model #{params}"
+
+    return params
   end
 end

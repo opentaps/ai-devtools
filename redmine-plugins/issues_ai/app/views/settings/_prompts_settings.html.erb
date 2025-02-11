@@ -1,0 +1,62 @@
+<tbody class="prompts" id="prompts">
+    <tr>
+        <th>Default Prompt</th>
+        <td>
+            <textarea
+                name="settings[default_prompt]"
+                rows="10"
+                cols="80"
+            ><%= settings['default_prompt'] or 'Check how this ticket is worded and give useful feedback as to how it could be improved' %></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>Prompt for new Features</th>
+        <td>
+            <textarea
+                name="settings[prompt_feature]"
+                rows="10"
+                cols="80"
+            ><%= settings['prompt_feature'] %></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>Prompt for Bug</th>
+        <td>
+            <textarea
+                name="settings[prompt_bug]"
+                rows="10"
+                cols="80"
+            ><%= settings['prompt_bug'] %></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>Prompt for Support</th>
+        <td>
+            <textarea
+                name="settings[prompt_support]"
+                rows="10"
+                cols="80"
+            ><%= settings['prompt_support'] %></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>Prompt for Long Term</th>
+        <td>
+            <textarea
+                name="settings[prompt_longterm]"
+                rows="10"
+                cols="80"
+            ><%= settings['prompt_longterm'] %></textarea>
+        </td>
+    </tr>
+    <tr>
+        <th>Prompt for Unit Tests</th>
+        <td>
+            <textarea
+                name="settings[prompt_unittests]"
+                rows="10"
+                cols="80"
+            ><%= settings['prompt_unittests'] %></textarea>
+        </td>
+    </tr>
+</tbody>

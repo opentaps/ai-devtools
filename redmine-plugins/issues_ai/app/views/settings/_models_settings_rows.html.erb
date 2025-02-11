@@ -1,0 +1,55 @@
+<tr>
+    <th>Model Provider <span class="required"> *</span></th>
+    <td>
+        <select name="settings[models][provider][]" required="required">
+            <% if defined?(idx) %>
+                <option><%= settings['models']['provider'][idx] %></option>
+                <option value="">----</option>
+            <% end %>
+            <% settings['providers']['name'].each do |provider| %>
+                <option><%= provider %></option>
+            <% end %>
+        </select>
+        <a href="#" onclick="remove_model(this); return false;">Remove</a>
+    </td>
+</tr>
+<tr>
+    <th>Model <span class="required"> *</span></th>
+    <td>
+        <input type="text"
+            <% if defined?(idx) %>
+                value="<%= settings['models']['name'][idx] %>"
+            <% end %>
+            size="30"
+            placeholder="gpt-3.5-turbo"
+            name="settings[models][name][]"/>
+        <%= content_tag 'a', 'Show available models', :onclick => "settings_open_models_modal(this); return false;", :href => '#' %>
+    </td>
+</tr>
+<tr>
+    <th>Temperature</th>
+    <td>
+        <input type="number"
+            <% if defined?(idx) %>
+                value="<%= settings['models']['temperature'][idx] %>"
+            <% end %>
+            min="0"
+            step="0.01"
+            placeholder="0.2"
+            name="settings[models][temperature][]"/>
+        <a class="icon icon-help" title="Optional: change the model default temperature." href="https://platform.openai.com/docs/api-reference/chat#chat-create-temperature" target="_blank">&nbsp;</a>
+    </td>
+</tr>
+<tr>
+    <th>Max Tokens</th>
+    <td>
+        <input type="number"
+            <% if defined?(idx) %>
+                value="<%= settings['models']['max_tokens'][idx] %>"
+            <% end %>
+            min="0"
+            placeholder="2000"
+            name="settings[models][max_tokens][]"/>
+        <a class="icon icon-help" title="Optional: limit the amount of output tokens." href="https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens" target="_blank">&nbsp;</a>
+    </td>
+</tr>

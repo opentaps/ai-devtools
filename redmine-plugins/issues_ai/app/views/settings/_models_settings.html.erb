@@ -1,0 +1,63 @@
+<tbody class="models <% if defined?(active) %>active<% end %>" id="models">
+    <% # Note: must have providers setup first %>
+    <% if settings.dig('providers','name') && settings['providers']['name'].length > 0 %>
+        <% if settings.dig('models','name') && settings['models']['name'].length > 0  %>
+            <% settings['models']['name'].each_with_index do |_, idx| %>
+                <%= render partial: 'settings/models_settings_rows', locals: {settings: settings, idx: idx} %>
+            <% end %>
+        <% else %>
+            <%= render partial: 'settings/models_settings_rows', locals: {settings: settings} %>
+        <% end %>
+</tbody>
+<tbody class="models <% if defined?(active) %>active<% end %>" id="add_model">
+    <tr>
+        <th></th>
+        <td>
+            <a href="#" onclick="add_model(); return false;">Add Model</a>
+        </td>
+    </tr>
+</tbody>
+<tbody class="models <% if defined?(active) %>active<% end %>" id="default_models">
+    <tr>
+        <td colspan="2">
+            <hr>
+        </td>
+    </tr>
+    <tr>
+        <th>Default Model</th>
+        <td>
+            <select name="settings[model]">
+                <% if defined?(settings['model']) %>
+                    <option><%= settings['model'] %></option>
+                    <option value="">----</option>
+                <% end %>
+                <% settings['models']['name'].each_with_index do |m,midx| %>
+                    <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
+                <% end %>
+            </select>
+            <span class="icon icon-help" title="Optional: use this model by default, if not set the first configured model is used.">&nbsp;</span>
+        </td>
+    </tr>
+    <tr>
+        <th>Default Tool Model</th>
+        <td>
+            <select name="settings[tool_model]">
+                <% if defined?(settings['tool_model']) %>
+                    <option><%= settings['tool_model'] %></option>
+                <option value="">----</option>
+                <% end %>
+                <% settings['models']['name'].each_with_index do |m,midx| %>
+                    <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
+                <% end %>
+            </select>
+            <span class="icon icon-help" title="Optional: use this model when doing tool invocations, ususally OpenAI models work best here.">&nbsp;</span>
+        </td>
+    </tr>
+
+<% else %>
+    <tr>
+        <th></th>
+        <td>You must setup a <a href="#" onclick="toggle_settings('providers')">provider</a> first.</td>
+    </tr>
+<% end %>
+</tbody>

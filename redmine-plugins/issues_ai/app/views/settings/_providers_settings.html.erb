@@ -1,0 +1,17 @@
+<tbody class="providers <% if defined?(active) %>active<% end %>" id="providers">
+    <% if settings.dig('providers', 'name') && settings['providers']['name'].length > 0 %>
+        <% settings['providers']['name'].each_with_index do |_, idx| %>
+            <%= render partial: 'settings/providers_settings_rows', locals: {settings: settings, idx: idx} %>
+        <% end %>
+    <% else %>
+        <%= render partial: 'settings/providers_settings_rows', locals: {settings: settings} %>
+    <% end %>
+</tbody>
+<tbody class="providers <% if defined?(active) %>active<% end %>" id="add_provider">
+    <tr>
+        <th></th>
+        <td>
+            <a href="#" onclick="add_provider(); return false;">Add Provider</a>
+        </td>
+    </tr>
+</tbody>

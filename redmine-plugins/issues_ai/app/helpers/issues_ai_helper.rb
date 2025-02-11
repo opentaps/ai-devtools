@@ -30,4 +30,35 @@ module IssuesAiHelper
     options = [['- Choose a Repository -', '']] + options
     select_tag(name, options_for_select(options, params[:repository_id].to_s)) if options.size > 1
   end
+
+  def model_select_tag(name='model')
+    default_model = Setting.plugin_issues_ai['model']
+
+    selected_value = params[name].to_s if params[name].present?
+    selected_value = default_model if selected_value.blank?
+
+    options = []
+    if defined?(default_model)
+      options << default_model
+      options << ['----', '']
+    end
+
+    models = Setting.plugin_issues_ai['models']
+    if defined?(models)
+      providers = models['provider']
+      if defined?(providers)
+        providers.each_with_index do |provider, idx|
+          lbl = "#{provider}:#{models['name'][idx]}"
+          options << lbl
+        end
+      end
+    end
+
+    if options.size == 0
+      "No models configured, please configure a model in the plugin settings"
+    else
+      select_tag(name, options_for_select(options, selected_value))
+    end
+  end
+
 end

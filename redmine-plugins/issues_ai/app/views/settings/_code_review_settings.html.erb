@@ -1,0 +1,23 @@
+<tbody class="code_review" id="code_review">
+    <tr>
+            <th>Code Review Model</th>
+            <td>
+                <select name="settings[code_review_model]">
+                    <% if defined?(settings['code_review_model']) %>
+                        <option><%= settings['code_review_model'] %></option>
+                        <option value="">----</option>
+                    <% end %>
+                    <% settings['models']['name'].each_with_index do |m,midx| %>
+                        <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
+                    <% end %>
+                </select>
+                <span class="icon icon-help" title="Optional: use this model by default, if not set the first configured model is used.">&nbsp;</span>
+            </td>
+        </tr>
+    <tr>
+        <th>Code Review Prompts</th>
+        <td>
+            <a href="/issues_ai/code_review_settings">Settings per Repository</a>
+        </td>
+    </tr>
+</tbody>

@@ -7,8 +7,11 @@
 </p>
 <p>
     <%= label_tag 'model', 'Model' %>
-    <%= text_field_tag 'model', @model, size: 40, maxlength: 255, required: true %>
-    <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('model'); return false;", :href => '#' %>
+    <%= model_select_tag 'model' %>
+</p>
+<p>
+    <%= label_tag 'tool_model', 'Tool Model' %>
+    <%= model_select_tag 'tool_model' %>
 </p>
 <p>
     <%= label_tag 'question', 'Question' %>

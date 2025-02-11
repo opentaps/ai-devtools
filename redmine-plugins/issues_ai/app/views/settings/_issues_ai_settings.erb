@@ -1,145 +1,34 @@
 <% content_for :header_tags do %>
   <%= javascript_include_tag 'select_models', plugin: 'issues_ai' %>
+  <%= javascript_include_tag 'settings', plugin: 'issues_ai' %>
   <%= stylesheet_link_tag 'select_models', plugin: 'issues_ai' %>
+  <%= stylesheet_link_tag 'settings', plugin: 'issues_ai' %>
 <% end %>
 
 <%= render partial: 'issues_ai/select_models' %>
 
-<table>
-  <tbody>
-      <tr>
-          <th>API Url <span class="required"> *</span></th>
-          <td>
-              <input type="text" id="settings_api_url"
-                  value="<%= settings['api_url'] %>"
-                  placeholder="https://api.openai.com/v1"
-                  size="30"
-                  name="settings[api_url]" >
-              <span class="icon icon-help" title="The base URL for any OpenAI compatible APIs">&nbsp;</span>
-          </td>
-      </tr>
-      <tr>
-          <th>API Key <span class="required"> *</span></th>
-          <td>
-              <input type="password" id="settings_api_key"
-                  value="<%= settings['api_key'] %>"
-                  placeholder="sk-xxxx"
-                  size="80"
-                  name="settings[api_key]" >
-          </td>
-      </tr>
-      <tr>
-          <th>Model <span class="required"> *</span></th>
-          <td>
-              <input type="text" id="settings_model"
-                  value="<%= settings['model'] %>"
-                  size="30"
-                  placeholder="gpt-3.5-turbo"
-                  name="settings[model]" >
-              <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('settings_model', {api_key: $('#settings_api_key').val(), api_url: $('#settings_api_url').val()}); return false;", :href => '#' %>
+<script>
+// the scripts need to know which providers are configured
+var ISSUES_AI_MODEL_PROVIDERS = [];
+<% if settings.dig('providers', 'name') && settings['providers']['name'].length > 0 %>
+      <% settings['providers']['name'].each_with_index do |provider, idx| %>
+          ISSUES_AI_MODEL_PROVIDERS.push('<%= provider %>');
+      <% end %>
+<% end %>
+</script>
 
-          </td>
-      </tr>
-      <tr>
-          <th>Tool Model</th>
-          <td>
-              <input type="text" id="settings_tool_model"
-                  value="<%= settings['tool_model'] %>"
-                  size="30"
-                  placeholder="gpt-3.5-turbo"
-                  name="settings[tool_model]" >
-              <span class="icon icon-help" title="Optional: use this model when doing tool invocations, ususally OpenAI models work best here.">&nbsp;</span>
-              <%= content_tag 'a', 'Show available models', :onclick => "openModelsModal('settings_tool_model', {api_key: $('#settings_api_key').val(), api_url: $('#settings_api_url').val()}); return false;", :href => '#' %>
-          </td>
-      </tr>
-      <tr>
-          <th>Temperature</th>
-          <td>
-              <input type="number" id="settings_temperature"
-                  value="<%= settings['temperature'] %>"
-                  min="0"
-                  step="0.01"
-                  placeholder="0.2"
-                  name="settings[temperature]" >
-              <a class="icon icon-help" title="Optional: change the model default temperature." href="https://platform.openai.com/docs/api-reference/chat#chat-create-temperature" target="_blank">&nbsp;</a>
-          </td>
-      </tr>
-      <tr>
-          <th>Max Tokens</th>
-          <td>
-              <input type="number" id="settings_max_tokens"
-                  value="<%= settings['max_tokens'] %>"
-                  min="0"
-                  placeholder="2000"
-                  name="settings[max_tokens]" >
-              <a class="icon icon-help" title="Optional: limit the amount of output tokens." href="https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens" target="_blank">&nbsp;</a>
-          </td>
-      </tr>
-      <tr>
-          <th>Default Prompt</th>
-          <td>
-              <textarea
-                  id="settings_default_prompt"
-                  name="settings[default_prompt]"
-                  rows="10"
-                ><%= settings['default_prompt'] or 'Check how this ticket is worded and give useful feedback as to how it could be improved' %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Prompt for new Features</th>
-          <td>
-              <textarea
-                  id="settings_prompt_feature"
-                  name="settings[prompt_feature]"
-                  rows="10"
-                ><%= settings['prompt_feature'] %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Prompt for Bug</th>
-          <td>
-              <textarea
-                  id="settings_prompt_bug"
-                  name="settings[prompt_bug]"
-                  rows="10"
-                ><%= settings['prompt_bug'] %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Prompt for Support</th>
-          <td>
-              <textarea
-                  id="settings_prompt_support"
-                  name="settings[prompt_support]"
-                  rows="10"
-                ><%= settings['prompt_support'] %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Prompt for Long Term</th>
-          <td>
-              <textarea
-                  id="settings_prompt_longterm"
-                  name="settings[prompt_longterm]"
-                  rows="10"
-                ><%= settings['prompt_longterm'] %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Prompt for Unit Tests</th>
-          <td>
-              <textarea
-                  id="settings_prompt_unittests"
-                  name="settings[prompt_unittests]"
-                  rows="10"
-                ><%= settings['prompt_unittests'] %></textarea>
-          </td>
-      </tr>
-      <tr>
-          <th>Code Review Prompts</th>
-          <td>
-              <a href="/issues_ai/code_review_settings">Settings per Repository</a>
-          </td>
-      </tr>
-  </tbody>
-</table>
+<div class="issues_ai_settings">
+    <ul id="issues_ai_settings_menu" class="nav_menu">
+        <li class="providers active" onclick="toggle_settings('providers')"><a href="#">API Providers</a></li>
+        <li class="models" onclick="toggle_settings('models')"><a href="#">AI Models</a></li>
+        <li class="prompts" onclick="toggle_settings('prompts')"><a href="#">Prompts</a></li>
+        <li class="code_review" onclick="toggle_settings('code_review')"><a href="#">Code Review</a></li>
+    </ul>
+
+    <table>
+        <%= render partial: 'settings/providers_settings', locals: {settings: settings, active: "active"} %>
+        <%= render partial: 'settings/models_settings', locals: {settings: settings} %>
+        <%= render partial: 'settings/prompts_settings', locals: {settings: settings}%>
+        <%= render partial: 'settings/code_review_settings', locals: {settings: settings} %>
+    </table>
+</div>

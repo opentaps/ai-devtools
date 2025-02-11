@@ -169,7 +169,7 @@ module IssuesAiTools
         properties: {
           max_age_days: {
             type: :number,
-            description: "The maximum age of the tickets in days"
+            description: "The maximum age of the tickets in days, only use when a specific time period is requested"
           },
           status: {
             type: :string,

@@ -1,0 +1,42 @@
+<tr>
+    <th>Provider Name <span class="required"> *</span></th>
+    <td>
+        <input type="text"
+            <% if defined?(idx) %>
+                value="<%= settings['providers']['name'][idx] %>"
+            <% end %>
+            placeholder="OpenAI"
+            size="30"
+            required="required"
+            name="settings[providers][name][]">
+        <span class="icon icon-help" title="A name for this provider">&nbsp;</span>
+        <a href="#" onclick="remove_provider(this); return false;">Remove</a>
+    </td>
+</tr>
+<tr>
+    <th>API Url <span class="required"> *</span></th>
+    <td>
+        <input type="text"
+            <% if defined?(idx) %>
+                value="<%= settings['providers']['url'][idx] %>"
+            <% end %>
+            placeholder="https://api.openai.com/v1"
+            size="30"
+            required="required"
+            name="settings[providers][url][]">
+        <span class="icon icon-help" title="The base URL for any OpenAI compatible APIs">&nbsp;</span>
+    </td>
+</tr>
+<tr>
+    <th>API Key <span class="required"> *</span></th>
+    <td>
+        <input type="password"
+            <% if defined?(idx) %>
+                value="<%= settings['providers']['key'][idx] %>"
+            <% end %>
+            placeholder="sk-xxxx"
+            size="80"
+            required="required"
+            name="settings[providers][key][]">
+    </td>
+</tr>

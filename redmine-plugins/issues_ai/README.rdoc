@@ -32,15 +32,26 @@ Redmine does not offer all the hooks needed, so here are a couple of manual patc
 
 == Configuration
 
-Go to the plugin settings page and add your API urls, keys and default models.
+Go to the plugin settings page and add your API urls, keys for each provider you want to use.
+Setup default models for Code Review or the Ask AI page.
 Then setup the prompts you want to use, see the prompts directory for examples.
 
+In API Providers:
+Provider Name:: A string to identify the provider and add models to it
 API Url:: The base URL of the OpenAI compatible API, e.g. 'https://api.openai.com/v1'
 API Key:: The API key to use for authentication
-Model:: The default model to use for the AI requests
-Tool Model:: The model to use for tool invocation, usually OpenAI model work better here
+
+In AI Models:
+Model Provider:: which API provides the model
+Model:: the name of the model, refer to the API documentation for the available models or use the List Available Models helper (not every API provider support this)
 Temperature:: Optional: Override the Model default temperature, see for example: https://platform.openai.com/docs/api-reference/chat#chat-create-temperature
 Max Tokens:: Optional: Limit the amount of output tokens, see https://platform.openai.com/docs/api-reference/chat#chat-create-max_tokens
+
+Optionally setup the default models:
+Default Model:: The default model to use for the AI requests
+Default Tool Model:: The model to use for tool invocation, usually OpenAI model work better here
+
+In Prompts:
 Default Prompt:: The default prompt to use for evaluating the Issue content, the other prompt are for each specific Issue type
 Code Review Prompts:: Links to a page where the prompts for code reviews can be configured for each Repository setup in Redmine
 

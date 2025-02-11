@@ -1,0 +1,37 @@
+.issues_ai_settings {
+    display: flex;
+    flex-direction: row;
+}
+.issues_ai_settings .nav_menu {
+    width: 9em;
+}
+.issues_ai_settings ul.nav_menu {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+.issues_ai_settings ul.nav_menu li {
+    padding: 0.5em;
+    margin: 0.1em;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.issues_ai_settings ul.nav_menu li.active,
+.issues_ai_settings ul.nav_menu li:hover {
+    background-color: #9db9d5;
+    color: #fff;
+}
+.issues_ai_settings ul.nav_menu li.active a,
+.issues_ai_settings ul.nav_menu li:hover a {
+    color: #fff;
+    text-decoration: none;
+}
+
+.issues_ai_settings table {
+}
+.issues_ai_settings tbody {
+    display: none;
+}
+.issues_ai_settings tbody.active {
+    display: table-row-group;
+}

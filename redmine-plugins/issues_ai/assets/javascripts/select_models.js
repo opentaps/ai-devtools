@@ -1,20 +1,33 @@
-function selectModel(model, modalId, targetId) {
-  var target = $("#" + targetId);
+function selectModel(model, modalId, target) {
+  console.log("selectModel", { model, modalId, target });
+  // target can be a string or an element
+  if (typeof target === "string") {
+    target = $("#" + target);
+  }
   target.val(model);
   hideModal("#" + modalId + " h3");
 }
 
-function openModelsModal(targetId, options) {
+function openModelsModal(target, options) {
   // default modalId 'list_models'
   if (!options) options = {};
-  var modalId = options.modalId || "list_models";
+  const modalId = options.modalId || "list_models";
   // take the api_key and api_url from the options
-  var data = {};
+  const data = {};
   if (options.api_key) {
     data.api_key = options.api_key;
   }
   if (options.api_url) {
     data.api_url = options.api_url;
+  }
+  if (options.provider) {
+    data.provider = options.provider;
+  }
+  if (typeof target === "string") {
+    target = $("#" + target);
+  }
+  if (!target) {
+    console.error("No target found for openModelsModal");
   }
 
   var list = $("#" + modalId + " dl");
@@ -31,18 +44,25 @@ function openModelsModal(targetId, options) {
     },
     data: data,
     success: function (data) {
-      var models = data.models;
       list.empty();
-      for (var i = 0; i < models.length; i++) {
-        var model = models[i];
-        var dt = $("<dt>").append(
-          $("<a>")
-            .attr("href", "#")
-            .attr("title", "Select")
-            .attr("onclick", 'selectModel("' + model + '", "' + modalId + '", "' + targetId + '"); return false;')
-            .text(model),
-        );
-        list.append(dt);
+      if (data.models) {
+        var models = data.models;
+        for (var i = 0; i < models.length; i++) {
+          const model = models[i];
+          var dt = $("<dt>").append(
+            $("<a>")
+              .attr("href", "#")
+              .attr("title", "Select")
+              .text(model)
+              .click(function () {
+                selectModel(model, modalId, target);
+                return false;
+              }),
+          );
+          list.append(dt);
+        }
+      } else if (data.error) {
+        list.append('<div class="error flash">Error: ' + data.error + "</div>");
       }
       showModal(modalId, "500px");
     },
