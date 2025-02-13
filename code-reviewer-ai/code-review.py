@@ -16,7 +16,7 @@ MODEL_NAME = os.getenv("MODEL_NAME", "deepseek-reasoner")
 API_ENDPOINT = os.getenv("API_ENDPOINT", "https://api.deepseek.com/v1")
 AUTHOR_MAPPING = json.loads(os.getenv("AUTHOR_MAPPING", "{}"))  # Map git authors to Discord IDs
 LOG_FILE = os.getenv("LOG_FILE", "/tmp/code-reviewer-ai.log")
-PROMPT_FILE = "code_review/prompt.txt"
+PROMPT_FILE = os.getenv("PROMPT_FILE", "prompt.txt")
 DIFF_CONTEXT = os.getenv("DIFF_CONTEXT", "10")
 
 # check the API_KEY was set
