@@ -51,17 +51,29 @@ def log(message, printToConsole=False):
         f.write(f"[{timestamp}] {message}\n")
 
 def get_commit_info(commit_hash):
-    """Extract commit details and diff"""
+    """Extract commit details and diff given the GIT commit hash"""
     cmd = f"git show {commit_hash} --pretty=format:'%H%n%an <%aE>%n%s%n%b' -U{DIFF_CONTEXT}"
-    output = subprocess.check_output(cmd, shell=True, text=True)
-    parts = output.split('\n', 3)
-    return {
-        "hash": parts[0],
-        "author": parts[1],
-        "subject": parts[2],
-        "body": parts[3].split('\n\n', 1)[0],
-        "diff": parts[3].split('\n\n', 1)[1] if '\n\n' in parts[3] else ""
-    }
+    try:
+        output = subprocess.check_output(cmd, shell=True, text=True)
+        return get_diff_info(output)
+    except subprocess.CalledProcessError as e:
+        log(f"Error running command [{cmd}]: {e}", printToConsole=True)
+        exit(1)
+
+def get_diff_info(diff):
+    """Extract the needed fields from the given diff, expecting the format to match GIT output with --pretty=format:'%H%n%an <%aE>%n%s%n%b' """
+    parts = diff.split('\n', 3)
+    try:
+        return {
+            "hash": parts[0],
+            "author": parts[1],
+            "subject": parts[2],
+            "body": parts[3].split('\n\n', 1)[0],
+            "diff": parts[3].split('\n\n', 1)[1] if '\n\n' in parts[3] else ""
+        }
+    except IndexError:
+        log(f"Error parsing diff (make sure it matches the output of `git diff --pretty=format:'%H%n%an <%aE>%n%s%n%b'`): {diff}", printToConsole=True)
+        exit(1)
 
 def analyze_commit(commit_info):
     """Send commit info to AI model for analysis"""
@@ -135,18 +147,12 @@ def notify_discord(commit_info, review):
         )
         webhook.execute()
 
-if __name__ == "__main__":
-    if len(os.sys.argv) < 2:
-        log("Bad request: No commit hash provided", printToConsole=True)
-        exit(1)
 
-    commit_hash = os.sys.argv[1]
-    commit_info = get_commit_info(commit_hash)
-
+def process_commit(commit_info):
     # log the commit info
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     with open(LOG_FILE, "a") as f:
-        f.write(f"[{timestamp}] Processing commit {commit_hash}\n")
+        f.write(f"[{timestamp}] Processing commit {commit_info['hash']}\n")
         f.write(f"Author: {commit_info['author']}\n")
         f.write(f"Subject: {commit_info['subject']}\n")
 
@@ -157,4 +163,21 @@ if __name__ == "__main__":
         notify_discord(commit_info, review)
     except Exception as e:
         log(f"Error processing commit {commit_hash}: {str(e)}", printToConsole=True)
+        exit(1)
+
+
+if __name__ == "__main__":
+    # input is either a commit hash given as argument
+    # or no argument and the diff is read from stdin
+    if len(os.sys.argv) < 2:
+        # read the diff from stdin
+        diff = os.sys.stdin.read()
+        commit_info = get_diff_info(diff)
+        process_commit(commit_info)
+    elif len(os.sys.argv) == 2:
+        commit_hash = os.sys.argv[1]
+        commit_info = get_commit_info(commit_hash)
+        process_commit(commit_info)
+    else:
+        log("Bad request: No commit hash provided", printToConsole=True)
         exit(1)
