@@ -1,21 +1,28 @@
 <tbody class="code_review" id="code_review">
     <tr>
-            <th>Code Review Model</th>
-            <td>
-                <select name="settings[code_review_model]">
-                    <% if defined?(settings['code_review_model']) %>
-                        <option><%= settings['code_review_model'] %></option>
-                        <option value="">----</option>
+        <th>Code Review Model</th>
+        <td>
+            <select name="settings[code_review_model]">
+                <% if defined?(settings['code_review_model']) %>
+                    <option><%= settings['code_review_model'] %></option>
+                    <option value="">----</option>
+                <% end %>
+                <% if settings.dig('models', 'name') %>
+                    <% settings['models']['name'].each_with_index do |m,midx| %>
+                        <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
                     <% end %>
-                    <% if settings.dig('models', 'name') %>
-                        <% settings['models']['name'].each_with_index do |m,midx| %>
-                            <option><%= settings['models']['provider'][midx] %>:<%= m %></option>
-                        <% end %>
-                    <% end %>
-                </select>
-                <span class="icon icon-help" title="Optional: use this model by default, if not set the first configured model is used.">&nbsp;</span>
-            </td>
-        </tr>
+                <% end %>
+            </select>
+            <span class="icon icon-help" title="Optional: use this model by default, if not set the first configured model is used.">&nbsp;</span>
+        </td>
+    </tr>
+    <tr>
+        <th>Diff Context Length</th>
+        <td>
+            <input type="number" value="<%= settings['code_review_diff_context_length'] %>" min="1" placeholder="3" name="settings[code_review_diff_context_length]"/>
+            <span class="icon icon-help" title="Optional: Change the default context length of the diff sent for analysis">&nbsp;</span>
+        </td>
+    </tr>
     <tr>
         <th>Code Review Prompts</th>
         <td>

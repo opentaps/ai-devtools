@@ -84,6 +84,33 @@ module RepositoryPatch
       return nil if path.nil?
       File.open(path, 'w') { |file| file.write(prompt_multi) }
     end
+
+    # custom method to get a diff for a commit with configurable context length
+    def commit_diff(commit_hash, context=3)
+      puts "commit_diff: #{commit_hash} using SCM: #{self.scm_name} adapter #{self.scm_adapter}"
+      # if the scm_adapter contains "GitAdapter" then we can handle adding the context
+      if self.scm_adapter.to_s.include? "GitAdapter"
+        cmd_args = []
+        cmd_args << "show" << "--no-color" << commit_hash
+        cmd_args << '--no-renames' if scm.class.client_version_above?([2, 9])
+        if context > 0
+          cmd_args << "-U#{context}"
+        end
+        diff = []
+        puts "commit_diff: running GIT cmd_args: #{cmd_args}"
+        # note: git_cmd is private
+        scm.send(:git_cmd, cmd_args) do |io|
+          io.each_line do |line|
+            diff << line
+          end
+        end
+        diff
+      else
+        # default to using the original method
+        diff(nil, commit_hash, nil)
+      end
+    end
+    
   end
 end
 

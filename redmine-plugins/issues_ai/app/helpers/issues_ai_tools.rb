@@ -11,7 +11,14 @@ module IssuesAiTools
 
     # get the diff. method takes path,rev,rev_to but we only need rev
     # note the response is an array of lines
-    diffs = repository.diff(nil, changeset.identifier, nil)
+    # this uses the patched method in the repository_patch.rb
+    
+    begin
+      context_length = Setting.plugin_issues_ai['code_review_diff_context_length'].to_i
+    rescue
+      context_length = 3
+    end
+    diffs = repository.commit_diff(changeset.identifier, context=context_length)
     if diffs.blank?
       return nil
     end
