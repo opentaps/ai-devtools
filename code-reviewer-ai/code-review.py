@@ -95,11 +95,13 @@ def analyze_commit(commit_info):
 
     response = client.chat.completions.create(
         model=MODEL_NAME,
-        messages=[{
+        messages=[
+        {"role": "system", "content": "You are a senior software engineer specializing in Java, python, Golang, typescript, javascript, SQL code reviews.  You are meticulous and detail-oriented, but also prioritize clear and concise feedback."},
+        {
             "role": "user",
             "content": prompt
         }],
-        temperature=0.2,
+        temperature=0.0,
         max_tokens=2000
     )
 

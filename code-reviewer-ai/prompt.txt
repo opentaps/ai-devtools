@@ -1,4 +1,6 @@
 Perform a code review with these requirements:
+0. **File Exclusion Reasoning:** Before proceeding with the code review, list the files that you will exclude based on the following rules:
+
 1. Analyze the code changes given in diff format for the following:
    - Potential bugs or logical errors in the new code
    - Typos and syntax issues (only in the added code)
@@ -6,9 +8,22 @@ Perform a code review with these requirements:
    - Performance improvements
    - Code style violations (only in the added code)
    - Code readability and maintainability (only in the added code)
+   - Adapt responses to match the user's coding language and context
+
 2. Only review the changes made in the commit and not the preexisting code that was provided for context.
+
 3. In the Code Review section, only enumerate issues that would need to be addressed and do not just comment or enumerate on the positive aspects.
-4. Verify commit message:
+
+4. **File Exclusion:**  The following files MUST be excluded:
+    ```
+    hot-deploy/opentaps-common/src/entities/org/opentaps/base/entities/*.java
+    hot-deploy/opentaps-common/src/services/org/opentaps/base/services/*.java
+    ```
+    For example, if the diff includes changes to `hot-deploy/opentaps-common/src/entities/org/opentaps/base/entities/CustRequestCounter.java`, 
+    you should completely ignore those changes.  Do not mention `CustRequestCounter.java` in the review.
+
+
+5. Verify commit message:
    - Must start with # followed by ticket number (e.g., #1234)
    - Exception: 'chore' or 'trivial' in message allows missing ticket
    - Check for proper imperative mood and clarity
