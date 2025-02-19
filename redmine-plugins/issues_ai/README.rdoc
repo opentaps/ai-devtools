@@ -38,7 +38,7 @@ Then setup the prompts you want to use, see the prompts directory for examples.
 
 In API Providers:
 Provider Name:: A string to identify the provider and add models to it
-API Url:: The base URL of the OpenAI compatible API, e.g. 'https://api.openai.com/v1'
+API Url:: The base URL of the OpenAI compatible API, e.g. for OpenAI 'https://api.openai.com/v1', for Gemini 'https://generativelanguage.googleapis.com/v1beta/openai/', for Ollama usually 'http://localhost:11434/v1', for Llama 'https://api.llama-api.com'
 API Key:: The API key to use for authentication
 
 In AI Models:
