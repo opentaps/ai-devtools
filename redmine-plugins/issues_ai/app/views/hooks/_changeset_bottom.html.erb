@@ -1,6 +1,15 @@
 <div>
     <%if changeset.has_code_review_results? %>
-        <%= textilizable(changeset.code_review_results) %>
+        <fieldset class="collapsible collapsed">
+            <legend onclick="toggleFieldset(this);" class="icon icon-collapsed">
+            <%= sprite_icon("angle-right") %>
+            Code Review Results
+            </legend>
+            <div style="display: none;">
+                <%= textilizable(changeset.code_review_results) %>
+            </div>
+        </fieldset>
+
         <%= link_to 'Queue a new AI Code Review', '/issues_ai/queue_review?commit_hash=' + changeset.identifier %>
     <%elsif changeset.has_code_review_queued? %>
         Pending AI Code Review ... (please check again in a few minutes)
