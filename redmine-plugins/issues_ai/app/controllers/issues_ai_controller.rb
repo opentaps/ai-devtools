@@ -640,8 +640,8 @@ class IssuesAiController < ApplicationController
 
   def find_model_idx(model_string)
     # the model given as a string <provider>:<model>
-    # split it into provider and model
-    provider, model = model_string.split(':')
+    # split it into provider and model (note: the model itself can contain ':')
+    provider, model = model_string.split(':', 2)
     puts "[find_model_idx] Finding model #{model} with provider #{provider}"
     # find the model that matches both the name and the provider (in case there are multiple of each)
     indexes = Setting.plugin_issues_ai['models']['name'].each_index.select { |i| Setting.plugin_issues_ai['models']['name'][i] == model && Setting.plugin_issues_ai['models']['provider'][i] == provider }
