@@ -18,6 +18,8 @@ AUTHOR_MAPPING = json.loads(os.getenv("AUTHOR_MAPPING", "{}"))  # Map git author
 LOG_FILE = os.getenv("LOG_FILE", "/tmp/code-reviewer-ai.log")
 PROMPT_FILE = os.getenv("PROMPT_FILE", "prompt.txt")
 DIFF_CONTEXT = os.getenv("DIFF_CONTEXT", "10")
+TEMPERATURE = os.getenv("TEMPERATURE", "0.0")
+MAX_TOKENS = os.getenv("MAX_TOKENS", "50000")
 
 # check the API_KEY was set
 if not API_KEY:
@@ -101,8 +103,8 @@ def analyze_commit(commit_info):
             "role": "user",
             "content": prompt
         }],
-        temperature=0.0,
-        max_tokens=2000
+        temperature=TEMPERATURE,
+        max_tokens=MAX_TOKENS
     )
 
     end_time = datetime.datetime.now()
