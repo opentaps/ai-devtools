@@ -32,14 +32,14 @@ if [ ! -d "$REPO_PATH/.git" ]; then
 fi
 
 function get_commit_review() {
-    local commit_hash
+    local commit_hash="$1"
+    local force_refresh="$2"
     local cache_file
 
-    commit_hash=$1
     # check if we have a cached review already for this commit
     # in SCRIPT_DIR/.cache/<commit_hash>
     cache_file="${CACHE_DIR}/${commit_hash}"
-    if [ -f "$cache_file" ]; then
+    if [ -f "$cache_file" ] && [ -z "$force_refresh" ]; then
         cat "$cache_file"
     else
         # display a temporary message while the review is being fetched
@@ -56,6 +56,7 @@ function get_latest_commit() {
   local author
   local date
   local message
+  local force_refresh="$1"
 
   commit_hash=$(git --git-dir="$REPO_PATH/.git" log -n 1 --pretty=format:"%H")
   author=$(git --git-dir="$REPO_PATH/.git" log -n 1 --pretty=format:"%an <%ae>")
@@ -77,12 +78,13 @@ function get_latest_commit() {
   done
 
   # Display the review
-  get_commit_review "$commit_hash"
+  get_commit_review "$commit_hash" "$force_refresh"
 }
 
 function display_commit() {
+  local force_refresh="$1"
   clear
-  get_latest_commit
+  get_latest_commit "$force_refresh"
 }
 
 function monitor_repo() {
@@ -96,7 +98,17 @@ function monitor_repo() {
       last_commit_hash="$current_commit_hash"
     fi
 
-    sleep $SLEEP_TIME
+    if read -t $SLEEP_TIME -n 1 key; then
+      case $key in
+        q|Q)
+          echo "Quitting..."
+          exit 0
+          ;;
+        r|R)
+          display_commit "refresh"
+          ;;
+      esac
+    fi
   done
 }
 
