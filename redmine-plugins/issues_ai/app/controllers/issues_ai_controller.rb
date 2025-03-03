@@ -68,7 +68,7 @@ class IssuesAiController < ApplicationController
       # insert them into the prompt with labels:
       prompt = "#{prompt}\n\nSubject: #{subject}\nContent: #{description}\n\nAnalysis:"
 
-      puts "[issues_ai] Calling the API at #{api_url} with model #{model}, temperature #{temperature}, max_tokens #{max_tokens}"
+      puts "[issues_ai] Calling the API with model #{model}, parameters #{parameters}"
       response = client.chat(
         parameters: parameters
       )
