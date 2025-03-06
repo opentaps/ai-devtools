@@ -18,8 +18,8 @@ AUTHOR_MAPPING = json.loads(os.getenv("AUTHOR_MAPPING", "{}"))  # Map git author
 LOG_FILE = os.getenv("LOG_FILE", "/tmp/code-reviewer-ai.log")
 PROMPT_FILE = os.getenv("PROMPT_FILE", "prompt.txt")
 DIFF_CONTEXT = os.getenv("DIFF_CONTEXT", "10")
-TEMPERATURE = os.getenv("TEMPERATURE", "0.0")
-MAX_TOKENS = os.getenv("MAX_TOKENS", "50000")
+TEMPERATURE = float(os.getenv("TEMPERATURE", "0.0"))
+MAX_TOKENS = int(os.getenv("MAX_TOKENS", "0"))
 
 # check the API_KEY was set
 if not API_KEY:
@@ -94,18 +94,22 @@ def analyze_commit(commit_info):
 
     # collect the response time for the AI model
     start_time = datetime.datetime.now()
+    params = {
+        'model': MODEL_NAME,
+        'messages': [
+            {"role": "system", "content": "You are a senior software engineer specializing in Java, python, Golang, typescript, javascript, SQL code reviews.  You are meticulous and detail-oriented, but also prioritize clear and concise feedback."},
+            {
+                "role": "user",
+                "content": prompt
+            }
+        ],
+        'temperature': TEMPERATURE
+    }
 
-    response = client.chat.completions.create(
-        model=MODEL_NAME,
-        messages=[
-        {"role": "system", "content": "You are a senior software engineer specializing in Java, python, Golang, typescript, javascript, SQL code reviews.  You are meticulous and detail-oriented, but also prioritize clear and concise feedback."},
-        {
-            "role": "user",
-            "content": prompt
-        }],
-        temperature=TEMPERATURE,
-        max_tokens=MAX_TOKENS
-    )
+    if MAX_TOKENS != 0:
+        params['max_tokens'] = MAX_TOKENS
+
+    response = client.chat.completions.create(**params)
 
     end_time = datetime.datetime.now()
     #
